@@ -30,6 +30,11 @@ Every screen works in **English and Turkish** (EN/TR toggle) and in **light and 
 global **plant filter** in the top bar applies everywhere. Global search (⌘K) finds work orders,
 sales orders, SKUs, machines, materials, customers, NCRs and tasks.
 
+## Presenting it
+
+See [`docs/DEMO-SCRIPT.md`](docs/DEMO-SCRIPT.md) for a 15-minute walkthrough with talking points
+and the stable story items (machines down, material shortage, B2B orders to release).
+
 ## Running it
 
 ```bash
@@ -51,14 +56,17 @@ Deploying: any Node host works. On Vercel, import the repo and deploy with the d
 (about 150 ms):
 
 - **4 plants** with the public Hobiex product mix, **64 machines** (lasers, welding robots, seam
-  welders, test benches, paint lines…), **~140 employees** on 3 shifts, **51 products** (MAN,
+  welders, test benches, paint lines…), **~285 shop-floor and support staff** on 3 shifts, **51 products** (MAN,
   Mercedes-Benz, Scania, Volvo, DAF, Iveco, Renault applications) and **39 fictional customers**
   in 34 countries.
-- Work orders are generated per plant per day against each plant's daily target. They then go
+- **~1,200 work orders** over the last 3 weeks and the next 2 are generated per plant per day
+  against each plant's daily target. They then go
   through a **finite-capacity forward scheduler**: every operation books the earliest free machine
   of its work-center type. Statuses, running operations, machine states, today's output and sales
   order progress all come from where *now* falls on that schedule, so every screen tells the same
   story.
+- About **1,050 sales orders** cover 3 months of history plus the current backlog. Raw-material
+  stock levels are derived from the actual BOM consumption of the plan.
 - Dates are relative to today (Europe/Istanbul). Entities stay the same on every reload: the same
   machines are down and the same customers own the same orders. Only the clock moves things along.
 - Interactions (dragging tasks, operator bookings, releasing B2B orders, NCR steps, stock receipts)

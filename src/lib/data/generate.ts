@@ -828,7 +828,7 @@ export function generateDataset(clock: Clock): Dataset {
       totalEur: round(lines.reduce((s, l) => s + l.qty * l.unitPriceEur, 0), 2),
       workOrderIds: [],
       incoterm: rng.pick(["EXW", "FCA", "CIF", "DAP"] as const),
-      b2bRef: i < 4 ? `B2B-${yy}${rng.digits(6)}` : undefined,
+      b2bRef: i < 4 || customer.channel === "b2b_portal" ? `B2B-${yy}${rng.digits(6)}` : undefined,
     });
   }
   // order history before the scheduling window (delivered, no work orders kept)

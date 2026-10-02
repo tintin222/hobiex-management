@@ -84,7 +84,7 @@ export function SignIn({ machineHint }: { machineHint?: Machine }) {
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="grid items-end gap-5 xl:grid-cols-[1fr_440px]">
+      <div className="grid grid-cols-[minmax(0,1fr)] items-end gap-5 xl:grid-cols-[minmax(0,1fr)_440px]">
         <div>
           <h1 className="font-display text-3xl font-semibold tracking-tight text-ink md:text-4xl">{t("signin.title")}</h1>
           <p className="mt-1.5 text-lg text-ink-2">{t("signin.subtitle")}</p>

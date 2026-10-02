@@ -1,0 +1,228 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/*
+ * Design tokens. Components only ever use these roles (bg-surface, text-ink-2,
+ * border-line, bg-brand ...) so light and dark mode swap in one place.
+ * Chart colors follow a CVD-validated categorical order (series-1..8) and a
+ * reserved status palette (good / warn / serious / critical).
+ */
+:root {
+  color-scheme: light;
+  --bg: #f4f5f7;
+  --surface: #ffffff;
+  --surface-2: #f7f8fa;
+  --surface-3: #eef0f3;
+  --line: #e3e6eb;
+  --line-strong: #cfd4dc;
+  --ink: #0d1117;
+  --ink-2: #4a5160;
+  --ink-3: #7d8494;
+
+  --brand: #0f5db8;
+  --brand-hover: #0c4f9e;
+  --brand-ink: #ffffff;
+  --brand-soft: #e8f0fb;
+  --brand-soft-ink: #0b4a94;
+  --sidebar: #0b1220;
+  --sidebar-2: #131c2e;
+  --sidebar-ink: #c9d1df;
+  --sidebar-ink-2: #7f8aa0;
+
+  --good: #0ca30c;
+  --good-soft: #e6f6e6;
+  --good-ink: #006300;
+  --warn: #fab219;
+  --warn-soft: #fff5dd;
+  --warn-ink: #8a5a00;
+  --serious: #ec835a;
+  --serious-soft: #fdeee7;
+  --serious-ink: #a8481f;
+  --critical: #d03b3b;
+  --critical-soft: #fbe9e9;
+  --critical-ink: #a32727;
+  --neutral-soft: #eef0f3;
+  --neutral-ink: #4a5160;
+
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --series-3: #1baf7a;
+  --series-4: #eda100;
+  --series-5: #e87ba4;
+  --series-6: #008300;
+  --series-7: #4a3aa7;
+  --series-8: #e34948;
+  --grid: #e8e9ec;
+  --axis: #c3c2b7;
+  --chart-muted: #898781;
+  --chart-track: #dbe7f8;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0b0e14;
+  --surface: #141922;
+  --surface-2: #1a202b;
+  --surface-3: #222a37;
+  --line: #262e3b;
+  --line-strong: #334052;
+  --ink: #f3f5f8;
+  --ink-2: #b7bfcc;
+  --ink-3: #848ea0;
+
+  --brand: #3987e5;
+  --brand-hover: #5598e7;
+  --brand-ink: #ffffff;
+  --brand-soft: #142640;
+  --brand-soft-ink: #9ec5f4;
+  --sidebar: #080b11;
+  --sidebar-2: #111827;
+  --sidebar-ink: #c9d1df;
+  --sidebar-ink-2: #7f8aa0;
+
+  --good-soft: #0f2a14;
+  --good-ink: #4cc94c;
+  --warn-soft: #2e2510;
+  --warn-ink: #f6c453;
+  --serious-soft: #2f1c14;
+  --serious-ink: #f0a07f;
+  --critical-soft: #331616;
+  --critical-ink: #f08a8a;
+  --neutral-soft: #222a37;
+  --neutral-ink: #b7bfcc;
+
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --series-3: #199e70;
+  --series-4: #c98500;
+  --series-5: #d55181;
+  --series-6: #008300;
+  --series-7: #9085e9;
+  --series-8: #e66767;
+  --grid: #262b33;
+  --axis: #383835;
+  --chart-muted: #898781;
+  --chart-track: #1c3557;
+}
+
+@theme inline {
+  --font-sans: "Outfit Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Space Grotesk Variable", "Outfit Variable", ui-sans-serif, system-ui, sans-serif;
+
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-ink: var(--brand-ink);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-soft-ink: var(--brand-soft-ink);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-2: var(--sidebar-2);
+  --color-sidebar-ink: var(--sidebar-ink);
+  --color-sidebar-ink-2: var(--sidebar-ink-2);
+  --color-good: var(--good);
+  --color-good-soft: var(--good-soft);
+  --color-good-ink: var(--good-ink);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-warn-ink: var(--warn-ink);
+  --color-serious: var(--serious);
+  --color-serious-soft: var(--serious-soft);
+  --color-serious-ink: var(--serious-ink);
+  --color-critical: var(--critical);
+  --color-critical-soft: var(--critical-soft);
+  --color-critical-ink: var(--critical-ink);
+  --color-neutral-soft: var(--neutral-soft);
+  --color-neutral-ink: var(--neutral-ink);
+  --color-series-1: var(--series-1);
+  --color-series-2: var(--series-2);
+  --color-series-3: var(--series-3);
+  --color-series-4: var(--series-4);
+  --color-series-5: var(--series-5);
+  --color-series-6: var(--series-6);
+  --color-series-7: var(--series-7);
+  --color-series-8: var(--series-8);
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--ink);
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Thin, unobtrusive scrollbars for dense tables and boards. */
+.scroll-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+.pulse-dot {
+  animation: pulse-dot 1.6s ease-in-out infinite;
+}
+
+@keyframes slide-in-right {
+  from {
+    transform: translateX(24px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+.animate-slide-in {
+  animation: slide-in-right 180ms ease-out;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.animate-fade-in {
+  animation: fade-in 160ms ease-out;
+}
+
+/* Recharts: keep focus outlines off the SVG surface; tooltips carry focus. */
+.recharts-wrapper *:focus {
+  outline: none;
+}
+
+/* Striped "hatch" used for downtime / blocked blocks in the Gantt. */
+.hatch {
+  background-image: repeating-linear-gradient(
+    135deg,
+    transparent 0 5px,
+    color-mix(in srgb, var(--critical) 22%, transparent) 5px 7px
+  );
+}

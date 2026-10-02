@@ -210,7 +210,7 @@ export function DashboardView() {
               <div className="h-full rounded-full bg-white" style={{ width: `${Math.min(100, (k.producedToday / Math.max(1, k.targetToday)) * 100)}%` }} />
             </div>
             <div className="mt-1.5 flex justify-between text-xs text-white/70">
-              <span>{t("kpi.weekVsPrior", { pct: `${k.prev7 >= k.prior7 ? "+" : "−"}${Math.abs(((k.prev7 - k.prior7) / Math.max(1, k.prior7)) * 100).toFixed(1)}%` })}</span>
+              <span>{t("kpi.weekVsPrior", { pct: `${k.prev7 >= k.prior7 ? "+" : "−"}${fmt.pct(Math.abs((k.prev7 - k.prior7) / Math.max(1, k.prior7)), 1)}` })}</span>
               <span>{t("kpi.monthRunRate", { n: fmt.compact(k.producedSeries.reduce((a, b) => a + b, 0)) })}</span>
             </div>
           </div>

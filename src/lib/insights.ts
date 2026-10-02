@@ -22,7 +22,7 @@ export function computeInsights(db: Dataset, now: number): Insight[] {
       title: `${m.id} down for ${mins >= 60 ? `${Math.floor(mins / 60)} h ${mins % 60} min` : `${mins} min`}`,
       titleTr: `${m.id} ${mins >= 60 ? `${Math.floor(mins / 60)} sa ${mins % 60} dk` : `${mins} dk`}dır duruşta`,
       detail: `${m.downReason ?? "Breakdown"} · ${waiting} work orders queued on this machine in the next 8 h.`,
-      detailTr: `${m.downReason ?? "Arıza"} · Önümüzdeki 8 saatte bu makinede ${waiting} iş emri sırada.`,
+      detailTr: `${m.downReasonTr ?? m.downReason ?? "Arıza"} · Önümüzdeki 8 saatte bu makinede ${waiting} iş emri sırada.`,
       href: `/shop-floor?machine=${m.id}`,
       impact: `${waiting} WO`,
     });

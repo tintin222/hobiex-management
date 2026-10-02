@@ -253,3 +253,12 @@ export const ALL_LABELS = {
 } as const;
 
 export type LabelKind = keyof typeof ALL_LABELS;
+
+/** Turkish versions of generated free-text reasons (work-order holds). */
+export const HOLD_REASON_TR: Record<string, string> = {
+  "Material shortage — SiC DPF core (RM-1303)": "Malzeme eksikliği — SiC DPF çekirdeği (RM-1303)",
+  "Quality hold — weld porosity investigation": "Kalite beklemesi — kaynak gözeneği incelemesi",
+  "Customer requested drawing change (Rev D)": "Müşteri çizim değişikliği talep etti (Rev D)",
+  "Waiting for fixture repair": "Fikstür tamiri bekleniyor",
+  "Put on hold": "Beklemeye alındı",
+};

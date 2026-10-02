@@ -121,6 +121,7 @@ export interface Machine {
   status: MachineStatus;
   statusSince: ISODateTime;
   downReason?: string;
+  downReasonTr?: string;
   currentWoId?: string;
   currentOpId?: string;
   operatorId?: string;

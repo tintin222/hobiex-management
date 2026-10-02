@@ -66,7 +66,9 @@ import type {
 const SEED = 20_26_0310;
 
 export function generateDataset(clock: Clock): Dataset {
-  const rng = new Rng(SEED);
+  // Each section re-seeds its own stream so time-dependent branches in one
+  // section never shift the random choices of the next (stable across reloads).
+  let rng = new Rng(SEED);
   const { now, today, dayStart } = clock;
   const iso = (ms: number) => new Date(ms).toISOString();
   const at = (dayOffset: number, hour = 0, minute = 0) => dayStart + dayOffset * DAY + hour * HOUR + minute * MIN;
@@ -558,8 +560,9 @@ export function generateDataset(clock: Clock): Dataset {
   }
 
   // derive execution state from "now"
-  const scrapRate = () => (rng.chance(0.55) ? 0 : rng.range(0.002, 0.02));
+  const scrapRate = (r: Rng) => (r.chance(0.55) ? 0 : r.range(0.002, 0.02));
   for (const wo of workOrders) {
+    const r = new Rng(SEED + Number(wo.id.slice(-5)));
     let input = wo.qty;
     let scrapTotal = 0;
     for (const op of wo.operations) {
@@ -567,24 +570,24 @@ export function generateDataset(clock: Clock): Dataset {
       const e = Date.parse(op.plannedEnd);
       const shift = shiftOfHour(localHourOf(op.plannedStart));
       if (e <= now) {
-        const jitter = rng.int(-8, 18) * MIN;
+        const jitter = r.int(-8, 18) * MIN;
         op.status = "done";
         op.actualStart = iso(s + jitter);
-        op.actualEnd = iso(Math.min(now - MIN, e + jitter + rng.int(-10, 25) * MIN));
+        op.actualEnd = iso(Math.min(now - MIN, e + jitter + r.int(-10, 25) * MIN));
         op.actualMinutes = Math.round((Date.parse(op.actualEnd) - Date.parse(op.actualStart)) / MIN);
-        op.qtyScrap = Math.round(input * scrapRate());
+        op.qtyScrap = Math.round(input * scrapRate(r));
         op.qtyDone = input - op.qtyScrap;
-        op.operatorId = rng.pick(staffFor(wo.plantId, shift, op.operation)).id;
+        op.operatorId = r.pick(staffFor(wo.plantId, shift, op.operation)).id;
         scrapTotal += op.qtyScrap;
         input = op.qtyDone;
       } else if (s <= now) {
         const frac = (now - s) / (e - s);
         op.status = "running";
-        op.actualStart = iso(s + rng.int(-5, 10) * MIN);
+        op.actualStart = iso(s + r.int(-5, 10) * MIN);
         op.actualMinutes = Math.round((now - Date.parse(op.actualStart)) / MIN);
-        op.qtyScrap = rng.chance(0.3) ? rng.int(1, 2) : 0;
+        op.qtyScrap = r.chance(0.3) ? r.int(1, 2) : 0;
         op.qtyDone = Math.max(0, Math.floor(input * frac) - op.qtyScrap);
-        op.operatorId = rng.pick(staffFor(wo.plantId, currentShift, op.operation)).id;
+        op.operatorId = r.pick(staffFor(wo.plantId, currentShift, op.operation)).id;
         scrapTotal += op.qtyScrap;
       }
     }
@@ -612,6 +615,7 @@ export function generateDataset(clock: Clock): Dataset {
   }
 
   // machine live state from the schedule
+  rng = new Rng(SEED + 7);
   const runningOps = new Map<string, { wo: WorkOrder; op: WorkOrderOperation }>();
   for (const wo of workOrders) for (const op of wo.operations) if (op.status === "running") runningOps.set(op.machineId, { wo, op });
 
@@ -629,15 +633,12 @@ export function generateDataset(clock: Clock): Dataset {
     weld_station: [["Welding power source fault E-07", "Kaynak güç ünitesi arızası E-07"]],
   };
   const downReasonsTr: Record<string, string> = Object.fromEntries(Object.values(downReasonsByType).flat());
-  // pick 3 running machines in different plants to be "down" right now
+  // three machines (P1–P3) are "down" right now — chosen independent of the
+  // clock so the same stops show up on every reload during a presentation
   const downIds = new Set<string>();
-  const usedPlants = new Set<PlantId>();
-  for (const id of rng.shuffle([...runningOps.keys()])) {
-    const m = machines.find((x) => x.id === id)!;
-    if (!downReasonsByType[m.type] || usedPlants.has(m.plantId)) continue;
-    downIds.add(id);
-    usedPlants.add(m.plantId);
-    if (downIds.size === 3) break;
+  for (const pid of ["P1", "P2", "P3"] as PlantId[]) {
+    const pool = machines.filter((m) => m.plantId === pid && downReasonsByType[m.type] && m.type !== "paint_line");
+    downIds.add(rng.pick(pool).id);
   }
   const holdWoIds = new Set<string>();
   const holdReasons = [
@@ -672,7 +673,9 @@ export function generateDataset(clock: Clock): Dataset {
     let status: MachineStatus;
     if (downIds.has(m.id)) {
       status = "down";
-      m.downReason = rng.pick(downReasonsByType[m.type]!)[0];
+      const [reasonEn, reasonTr] = rng.pick(downReasonsByType[m.type]!);
+      m.downReason = reasonEn;
+      m.downReasonTr = reasonTr;
       m.statusSince = iso(now - rng.int(25, 150) * MIN);
       if (r) {
         r.op.status = "paused";
@@ -746,6 +749,7 @@ export function generateDataset(clock: Clock): Dataset {
   }
 
   // ───────────────────────────── Sales orders ─────────────────────────────
+  rng = new Rng(SEED + 11);
   const salesOrders: SalesOrder[] = [];
   let soNo = 4380;
   const custWeights = customers.map((c) => [c, c.channel === "b2b_portal" ? 3 : 1.6] as const);
@@ -795,22 +799,23 @@ export function generateDataset(clock: Clock): Dataset {
   for (const wo of workOrders) if (wo.customerId === "pending") wo.customerId = undefined;
   const woById = new Map(workOrders.map((w) => [w.id, w]));
   for (const so of salesOrders) {
+    const r = new Rng(SEED + Number(so.id.slice(-5)));
     so.totalEur = round(so.lines.reduce((s, l) => s + l.qty * l.unitPriceEur, 0), 2);
     const wos = so.workOrderIds.map((id) => woById.get(id)!);
     const allDone = wos.every((w) => w.status === "completed");
     const anyStarted = wos.some((w) => w.status !== "planned" && w.status !== "released");
     if (allDone) {
       const lastEnd = Math.max(...wos.map((w) => Date.parse(w.actualEnd!)));
-      const shipAt = lastEnd + rng.range(0.6, 1.4) * DAY;
+      const shipAt = lastEnd + r.range(0.6, 1.4) * DAY;
       const cust = customers.find((c) => c.id === so.customerId)!;
       if (shipAt > now) so.status = "ready";
       else {
         const eta = shipAt + transitDays(cust.countryCode) * DAY;
-        const mode = ["ZA", "NG", "BR", "CL"].includes(cust.countryCode) ? "sea" : rng.chance(0.06) ? "air" : "truck";
+        const mode = ["ZA", "NG", "BR", "CL"].includes(cust.countryCode) ? "sea" : r.chance(0.06) ? "air" : "truck";
         so.shipment = {
           mode,
-          carrier: mode === "sea" ? rng.pick(["Bosphorus Line", "Marmara Shipping"]) : mode === "air" ? "Silivri Air Cargo" : rng.pick(["Trakya Lojistik", "Anadolu Transport", "EuroRoute TIR"]),
-          tracking: `${mode === "sea" ? "MSKU" : mode === "air" ? "AWB" : "TIR"}${rng.digits(8)}`,
+          carrier: mode === "sea" ? r.pick(["Bosphorus Line", "Marmara Shipping"]) : mode === "air" ? "Silivri Air Cargo" : r.pick(["Trakya Lojistik", "Anadolu Transport", "EuroRoute TIR"]),
+          tracking: `${mode === "sea" ? "MSKU" : mode === "air" ? "AWB" : "TIR"}${r.digits(8)}`,
           shippedAt: localDateOf(shipAt),
           eta: localDateOf(eta),
         };
@@ -819,6 +824,7 @@ export function generateDataset(clock: Clock): Dataset {
     } else if (anyStarted) so.status = "in_production";
     else so.status = "confirmed";
   }
+  rng = new Rng(SEED + 31);
   // brand-new orders that just came in through the B2B portal (not yet converted)
   for (let i = 0; i < 6; i++) {
     const customer = rng.weighted(custWeights.filter(([c]) => c.channel === "b2b_portal" || rng.chance(0.3)));
@@ -853,6 +859,7 @@ export function generateDataset(clock: Clock): Dataset {
   }
 
   // ───────────────────────────── Tasks ─────────────────────────────
+  rng = new Rng(SEED + 13);
   const tasks: Task[] = [];
   let taskNo = 5001;
   const opL = (op: OperationType) => OP_LABELS[op];
@@ -974,6 +981,7 @@ export function generateDataset(clock: Clock): Dataset {
   }
 
   // ───────────────────────────── Quality ─────────────────────────────
+  rng = new Rng(SEED + 17);
   const measurementTemplates: Record<ProductCategory, [string, number, number, number, string][]> = {
     muffler: [["Overall length", 980, 2, 2, "mm"], ["Inlet pipe Ø", 101.6, 0.4, 0.4, "mm"], ["Flange flatness", 0, 0, 0.2, "mm"], ["Leak test Δp", 0, 0, 3, "mbar"], ["Paint thickness", 70, 15, 15, "µm"]],
     scr_muffler: [["Overall length", 1120, 2.5, 2.5, "mm"], ["Mat GBD", 0.42, 0.03, 0.03, "g/cm³"], ["Inlet Ø", 127, 0.5, 0.5, "mm"], ["Leak test Δp", 0, 0, 3, "mbar"]],
@@ -1120,6 +1128,7 @@ export function generateDataset(clock: Clock): Dataset {
   ncrs.sort((a, b) => (a.openedAt < b.openedAt ? 1 : -1));
 
   // ───────────────────────────── Maintenance ─────────────────────────────
+  rng = new Rng(SEED + 19);
   const maintenance: MaintenanceOrder[] = [];
   let moNo = 720;
   const techs = (pid: PlantId) => employees.filter((e) => e.plantId === pid && e.role === "maintenance_tech");
@@ -1177,6 +1186,7 @@ export function generateDataset(clock: Clock): Dataset {
   maintenance.sort((a, b) => (a.scheduledDate < b.scheduledDate ? -1 : 1));
 
   // ───────────────────────────── Production history ─────────────────────────────
+  rng = new Rng(SEED + 23);
   const dailyProduction: DailyProduction[] = [];
   for (let d = -59; d <= -1; d++) {
     const date = addDays(today, d);
@@ -1239,6 +1249,7 @@ export function generateDataset(clock: Clock): Dataset {
   downtime.sort((a, b) => (a.start < b.start ? 1 : -1));
 
   // ───────────────────────────── Stock movements ─────────────────────────────
+  rng = new Rng(SEED + 29);
   const stockMovements: StockMovement[] = [];
   const recentWos = workOrders.filter((w) => w.actualStart && Date.parse(w.actualStart) > now - 7 * DAY);
   const whStaff = employees.filter((e) => e.role === "warehouse");

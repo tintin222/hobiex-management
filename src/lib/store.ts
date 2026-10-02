@@ -256,6 +256,7 @@ export const actions = {
               status,
               statusSince: nowIso(),
               downReason: status === "down" ? ctx?.reason ?? m.downReason ?? "Reported from shop floor" : undefined,
+              downReasonTr: status === "down" ? (ctx?.reason ? ctx.reason : m.downReasonTr ?? "Atölyeden bildirildi") : undefined,
               currentWoId: status === "running" || status === "setup" ? ctx?.woId ?? m.currentWoId : status === "down" ? m.currentWoId : undefined,
               currentOpId: status === "running" || status === "setup" ? ctx?.opId ?? m.currentOpId : status === "down" ? m.currentOpId : undefined,
               operatorId: ctx?.operatorId ?? (status === "running" || status === "setup" ? m.operatorId : undefined),

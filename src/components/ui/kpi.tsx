@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { ArrowDownRight, ArrowUpRight } from "lucide-react";
+import { useFmt } from "@/i18n";
 import { cn } from "@/lib/cn";
 import { Card } from "./primitives";
 
@@ -64,6 +65,7 @@ export function KpiTile({
   className?: string;
   onClick?: () => void;
 }) {
+  const fmt = useFmt();
   const good = delta === undefined ? undefined : delta === 0 ? undefined : delta > 0 === upIsGood;
   return (
     <Card className={cn("flex flex-col gap-2 p-4", onClick && "cursor-pointer transition-colors hover:border-line-strong", className)} onClick={onClick}>
@@ -84,7 +86,7 @@ export function KpiTile({
             <span className={cn("inline-flex items-center gap-0.5 font-medium", good === undefined ? "text-ink-3" : good ? "text-good-ink" : "text-critical-ink")}>
               {delta >= 0 ? <ArrowUpRight className="size-3.5" /> : <ArrowDownRight className="size-3.5" />}
               {delta >= 0 ? "+" : "−"}
-              {Math.abs(delta * 100).toFixed(1)}%
+              {fmt.pct(Math.abs(delta), 1)}
             </span>
           )}
           {deltaLabel && <span className="text-ink-3">{deltaLabel}</span>}
@@ -109,6 +111,7 @@ export function RingGauge({
   label?: ReactNode;
   tone?: "good" | "warn" | "critical" | "brand";
 }) {
+  const fmt = useFmt();
   const v = Math.max(0, Math.min(1, value));
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
@@ -132,7 +135,7 @@ export function RingGauge({
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span className="font-display text-sm font-semibold text-ink tabular" style={{ fontSize: size * 0.22 }}>
-          {Math.round(v * 100)}%
+          {fmt.pct(v)}
         </span>
         {label && <span className="text-[10px] text-ink-3">{label}</span>}
       </div>

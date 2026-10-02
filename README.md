@@ -1,5 +1,7 @@
 # Hobiex Production Management System — demo
 
+**Live:** https://hobiex-management.vercel.app
+
 A clickable demo of a production management system (MES-lite) for **Hobiex / Hobi Exhaust**
 (Silivri, İstanbul). Hobiex makes exhaust and emission systems for trucks, buses and generators,
 plus air and fuel tanks, across 4 plants. Every screen runs on **synthetic data**. No real Hobiex
@@ -48,7 +50,10 @@ Requirements: Node 20+. No database, API keys or environment variables are neede
 
 Checks: `npm run typecheck`, `npm run lint`.
 
-Deploying: any Node host works. On Vercel, import the repo and deploy with the defaults.
+Deploying: the repo is connected to Vercel (team *infinics*, project `hobiex-management`), so
+every push to the default branch deploys to production at https://hobiex-management.vercel.app
+and other branches get preview URLs. Server rendering runs in Frankfurt (`fra1`, see
+`vercel.json`). Any other Node host works too.
 
 ## How the synthetic data works
 

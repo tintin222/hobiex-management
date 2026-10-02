@@ -69,7 +69,7 @@ export function Sidebar({ onNavigate, className }: { onNavigate?: () => void; cl
   return (
     <aside className={cn("flex h-full w-60 flex-col bg-sidebar text-sidebar-ink", className)}>
       <div className="flex h-16 items-center gap-2 px-5">
-        <Image src="/brand/logo.png" alt="Hobiex" width={110} height={22} className="h-[22px] w-auto brightness-0 invert" priority />
+        <Image src="/brand/logo.png" alt="Hobiex" width={110} height={22} className="h-[22px] w-auto brightness-0 invert" preload />
         <span className="mt-1 rounded bg-white/10 px-1.5 py-0.5 text-[10px] font-semibold tracking-wider text-sidebar-ink uppercase">PMS</span>
       </div>
       <nav className="flex-1 overflow-y-auto px-3 pb-4 scroll-thin">

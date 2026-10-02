@@ -90,22 +90,13 @@ export function generateDataset(clock: Clock): Dataset {
     component: [21, 35],
   };
   const lowStock = new Set(["RM-1303", "RM-1301", "RM-1104", "RM-1006"]);
+  // Quantities (usage, on-hand, reserved, history) are filled in after the
+  // production plan exists, so stock levels match real BOM consumption.
+  const baseUsage = new Map<string, number>();
   const materials: Material[] = MATERIALS.map(([id, name, nameTr, category, unit, unitCostEur, supplier, usage]) => {
+    baseUsage.set(id, usage);
     const [lt0, lt1] = leadTimeFor[category];
-    const leadTimeDays = rng.int(lt0, lt1);
-    const dailyUsage = round(usage * rng.range(0.85, 1.15), unit === "kg" || unit === "m" ? 0 : 0);
-    const safetyStock = Math.ceil(dailyUsage * 3);
-    const reorderPoint = Math.ceil(dailyUsage * leadTimeDays * 0.9 + safetyStock);
-    let onHand: number;
-    if (id === "RM-1303") onHand = Math.round(safetyStock * 0.55);
-    else if (lowStock.has(id)) onHand = Math.round(reorderPoint * rng.range(0.6, 0.9));
-    else onHand = Math.round(reorderPoint * rng.range(1.15, 2.6));
-    const step = unit === "kg" ? 10 : 1;
-    onHand = Math.round(onHand / step) * step;
-    const reserved = Math.round((onHand * rng.range(0.2, 0.55)) / step) * step;
-    const onOrder = onHand < reorderPoint ? Math.round(dailyUsage * leadTimeDays * 1.2) : rng.chance(0.4) ? Math.round(dailyUsage * rng.int(5, 15)) : 0;
     const zone = category === "sheet_metal" ? "A" : category === "tube" ? "B" : category === "packaging" ? "D" : "C";
-    const location = `WH-${zone}-${String(rng.int(1, 18)).padStart(2, "0")}-${rng.int(1, 4)}`;
     const metallic = category === "sheet_metal" || category === "tube";
     const lots = Array.from({ length: rng.int(2, 4) }, (_, i) => {
       const daysAgo = rng.int(2 + i * 9, 10 + i * 12);
@@ -117,22 +108,6 @@ export function generateDataset(clock: Clock): Dataset {
         certificate: metallic ? "EN 10204 3.1" : category === "substrate" || category === "component" ? "CoC + PPAP L3" : "CoC",
       };
     });
-    // split on-hand across lots, newest has the most
-    let rest = onHand;
-    lots.forEach((l, i) => {
-      const share = i === lots.length - 1 ? rest : Math.round(rest * rng.range(0.45, 0.7));
-      l.qty = share;
-      rest -= share;
-    });
-    // 30-day on-hand history, built backwards from today's level
-    const history: number[] = new Array(30);
-    history[29] = onHand;
-    const maxLevel = reorderPoint * 2.4;
-    for (let i = 28; i >= 0; i--) {
-      let h = history[i + 1] + dailyUsage * rng.range(0.6, 1.3);
-      if (h > maxLevel) h -= dailyUsage * leadTimeDays * 1.3;
-      history[i] = Math.max(0, Math.round(h));
-    }
     return {
       id,
       code: id,
@@ -140,18 +115,18 @@ export function generateDataset(clock: Clock): Dataset {
       nameTr,
       category,
       unit,
-      onHand,
-      reserved: Math.min(reserved, onHand),
-      onOrder,
-      reorderPoint,
-      safetyStock,
-      leadTimeDays,
+      onHand: 0,
+      reserved: 0,
+      onOrder: 0,
+      reorderPoint: 0,
+      safetyStock: 0,
+      leadTimeDays: rng.int(lt0, lt1),
       unitCostEur,
       supplier,
-      location,
-      dailyUsage,
-      lots: lots.filter((l) => l.qty > 0),
-      history,
+      location: `WH-${zone}-${String(rng.int(1, 18)).padStart(2, "0")}-${rng.int(1, 4)}`,
+      dailyUsage: 0,
+      lots,
+      history: [],
     };
   });
   const materialById = new Map(materials.map((m) => [m.id, m]));
@@ -762,12 +737,14 @@ export function generateDataset(clock: Clock): Dataset {
     const release = Date.parse(wo.createdAt);
     if (!openOrder || openOrder.lines.length >= 4 || release - openOrderRelease > 1.5 * DAY || rng.chance(0.5)) {
       const customer = rng.weighted(custWeights);
-      const orderDate = addDays(localDateOf(release), -rng.int(0, 4));
+      // future work is for orders received in the past few days, never "all today"
+      let orderDate = addDays(localDateOf(release), -rng.int(1, 6));
+      if (orderDate > today) orderDate = addDays(today, -rng.int(1, 9));
       const so: SalesOrder = {
         id: `SO-${yy}-${String(soNo++).padStart(5, "0")}`,
         customerId: customer.id,
         channel: customer.channel,
-        orderDate: orderDate > today ? today : orderDate,
+        orderDate,
         requestedDate: wo.dueDate,
         promisedDate: wo.dueDate,
         status: "confirmed",
@@ -848,7 +825,101 @@ export function generateDataset(clock: Clock): Dataset {
       b2bRef: i < 4 ? `B2B-${yy}${rng.digits(6)}` : undefined,
     });
   }
+  // order history before the scheduling window (delivered, no work orders kept)
+  rng = new Rng(SEED + 41);
+  let histNo = 3560;
+  for (let d = -92; d < START_DAY - 1; d++) {
+    const date = addDays(today, d);
+    const dow = new Date(`${date}T12:00:00Z`).getUTCDay();
+    const n = dow === 0 ? rng.int(1, 3) : rng.int(7, 12);
+    for (let i = 0; i < n; i++) {
+      const customer = rng.weighted(custWeights);
+      const lines = rng.sample(products, rng.weighted([[1, 3], [2, 3], [3, 2], [4, 1]] as const)).map((p) => {
+        const [lo, hi, step] = qtyRange[p.category];
+        const qty = Math.round(rng.range(lo, hi) / step) * step || step;
+        return { productId: p.id, qty, unitPriceEur: round(p.listPriceEur * rng.range(0.84, 0.97), 2), qtyProduced: qty };
+      });
+      const promised = addDays(date, rng.int(8, 15));
+      const shipped = addDays(promised, rng.weighted([[-2, 3], [-1, 4], [0, 5], [1, 1.2], [3, 0.6]] as const));
+      const eta = addDays(shipped, transitDays(customer.countryCode));
+      const mode = ["ZA", "NG", "BR", "CL"].includes(customer.countryCode) ? "sea" : rng.chance(0.05) ? "air" : "truck";
+      salesOrders.push({
+        id: `SO-${yy}-${String(histNo++).padStart(5, "0")}`,
+        customerId: customer.id,
+        channel: customer.channel,
+        orderDate: date,
+        requestedDate: addDays(promised, -rng.int(0, 3)),
+        promisedDate: promised,
+        status: eta < today ? "delivered" : "shipped",
+        priority: rng.weighted([["low", 1], ["normal", 6], ["high", 2], ["urgent", 0.6]] as const),
+        lines,
+        totalEur: round(lines.reduce((s, l) => s + l.qty * l.unitPriceEur, 0), 2),
+        workOrderIds: [],
+        incoterm: customer.countryCode === "TR" ? "DAP" : ["ZA", "NG", "BR", "CL", "SA", "AE", "QA", "EG", "MA", "DZ"].includes(customer.countryCode) ? "CIF" : rng.pick(["EXW", "FCA", "FCA"] as const),
+        shipment: {
+          mode,
+          carrier: mode === "sea" ? rng.pick(["Bosphorus Line", "Marmara Shipping"]) : mode === "air" ? "Silivri Air Cargo" : rng.pick(["Trakya Lojistik", "Anadolu Transport", "EuroRoute TIR"]),
+          tracking: `${mode === "sea" ? "MSKU" : mode === "air" ? "AWB" : "TIR"}${rng.digits(8)}`,
+          shippedAt: shipped,
+          eta,
+        },
+        b2bRef: customer.channel === "b2b_portal" ? `B2B-${yy}${rng.digits(6)}` : undefined,
+      });
+    }
+  }
+  // credit limits sized to each customer's open business
+  for (const c of customers) {
+    const open = salesOrders.filter((o) => o.customerId === c.id && o.status !== "delivered").reduce((s, o) => s + o.totalEur, 0);
+    const needed = Math.ceil((open * rng.range(1.35, 2.1)) / 25000) * 25000;
+    c.creditLimitEur = Math.max(c.creditLimitEur, needed);
+  }
   salesOrders.sort((a, b) => (a.orderDate < b.orderDate ? 1 : a.orderDate > b.orderDate ? -1 : a.id < b.id ? 1 : -1));
+
+  // ── Stock levels, now that the production plan is known ──
+  rng = new Rng(SEED + 37);
+  const horizonEnd = now + 14 * DAY;
+  const planDemand = new Map<string, number>();
+  const reservedDemand = new Map<string, number>();
+  for (const wo of workOrders) {
+    const start = Date.parse(wo.plannedStart);
+    const product = productById.get(wo.productId)!;
+    for (const b of product.bom) {
+      if (start >= now - 7 * DAY && start < horizonEnd) planDemand.set(b.materialId, (planDemand.get(b.materialId) ?? 0) + b.qtyPerUnit * wo.qty);
+      if (wo.status === "released" || (wo.status === "in_progress" && wo.operations[0].status !== "done"))
+        reservedDemand.set(b.materialId, (reservedDemand.get(b.materialId) ?? 0) + b.qtyPerUnit * wo.qty);
+    }
+  }
+  for (const mat of materials) {
+    const step = mat.unit === "kg" ? 10 : 1;
+    const snap = (v: number) => Math.max(0, Math.round(v / step) * step);
+    const usage = round((planDemand.get(mat.id) ?? 0) / 21 || baseUsage.get(mat.id)! * 0.2, mat.unit === "pcs" || mat.unit === "set" ? 0 : 1);
+    mat.dailyUsage = Math.max(usage, mat.unit === "pcs" || mat.unit === "set" ? 1 : 0.1);
+    mat.safetyStock = Math.ceil(mat.dailyUsage * 3);
+    mat.reorderPoint = Math.ceil(mat.dailyUsage * mat.leadTimeDays * 0.9 + mat.safetyStock);
+    if (mat.id === "RM-1303") mat.onHand = snap(mat.safetyStock * 0.55);
+    else if (lowStock.has(mat.id)) mat.onHand = snap(mat.reorderPoint * rng.range(0.6, 0.9));
+    else mat.onHand = snap(Math.max(mat.reorderPoint * rng.range(1.2, 2.1), mat.dailyUsage * rng.range(16, 26)));
+    mat.reserved = Math.min(snap(reservedDemand.get(mat.id) ?? 0), snap(mat.onHand * 0.6));
+    mat.onOrder = lowStock.has(mat.id) ? snap(mat.dailyUsage * mat.leadTimeDays * 1.2) : rng.chance(0.4) ? snap(mat.dailyUsage * rng.int(8, 18)) : 0;
+    // split on-hand across lots: the most recent receipt holds the most
+    let rest = mat.onHand;
+    mat.lots.forEach((l, i) => {
+      const share = i === mat.lots.length - 1 ? rest : Math.round(rest * rng.range(0.45, 0.7));
+      l.qty = share;
+      rest -= share;
+    });
+    mat.lots = mat.lots.filter((l) => l.qty > 0);
+    // 30-day on-hand history, built backwards from today's level
+    const history: number[] = new Array(30);
+    history[29] = mat.onHand;
+    const maxLevel = Math.max(mat.reorderPoint * 2.3, mat.onHand * 1.1);
+    for (let i = 28; i >= 0; i--) {
+      let h = history[i + 1] + mat.dailyUsage * rng.range(0.6, 1.3);
+      if (h > maxLevel) h -= mat.dailyUsage * mat.leadTimeDays * 1.3;
+      history[i] = Math.max(0, Math.round(h));
+    }
+    mat.history = history;
+  }
 
   // material availability for upcoming work
   for (const wo of workOrders) {

@@ -1,18 +1,36 @@
 "use client";
 
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { IconButton } from "./primitives";
 
+// Stack of open overlays: Escape only closes the top-most one (a modal opened
+// from a drawer closes without taking the drawer with it).
+const escapeStack: symbol[] = [];
+
 function useEscape(open: boolean, onClose: () => void) {
+  // keep the latest callback without re-registering (re-registering would
+  // reorder the stack when a parent re-renders with a new inline onClose)
+  const closeRef = useRef(onClose);
+  useEffect(() => {
+    closeRef.current = onClose;
+  });
   useEffect(() => {
     if (!open) return;
-    const h = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    const token = Symbol("overlay");
+    escapeStack.push(token);
+    const h = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && escapeStack[escapeStack.length - 1] === token) closeRef.current();
+    };
     window.addEventListener("keydown", h);
-    return () => window.removeEventListener("keydown", h);
-  }, [open, onClose]);
+    return () => {
+      window.removeEventListener("keydown", h);
+      const i = escapeStack.indexOf(token);
+      if (i >= 0) escapeStack.splice(i, 1);
+    };
+  }, [open]);
 }
 
 /** Right-hand side panel for record details. */

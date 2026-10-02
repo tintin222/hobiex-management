@@ -71,7 +71,8 @@ export function getDb(): Dataset {
   return useStore.getState().db as Dataset;
 }
 
-function patchDb(fn: (db: Dataset) => Partial<Dataset>) {
+/** Immutable dataset update for feature-local actions. */
+export function patchDb(fn: (db: Dataset) => Partial<Dataset>) {
   const db = getDb();
   useStore.setState({ db: { ...db, ...fn(db) } });
 }

@@ -129,6 +129,8 @@ export function AssetsPanel({ rows, onSchedule }: { rows: AssetRow[]; onSchedule
             size="xs"
             variant={r.pmOverdue ? "subtle" : "ghost"}
             icon={<CalendarPlus className="size-3.5" />}
+            title={t("health.schedulePm")}
+            aria-label={t("health.schedulePm")}
             onClick={(e) => {
               e.stopPropagation();
               onSchedule(r.machine.id);

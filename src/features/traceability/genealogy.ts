@@ -169,7 +169,9 @@ export function recallFor(db: Dataset, hits: LotHit[]): Recall {
       break;
     }
   }
-  rows.sort((a, b) => (a.start < b.start ? 1 : a.start > b.start ? -1 : 0));
+  // containment order: what already left the plant first, then FG, WIP, planned
+  const order: Record<Bucket, number> = { customer: 0, fg: 1, wip: 2, planned: 3 };
+  rows.sort((a, b) => order[a.bucket] - order[b.bucket] || (a.start < b.start ? 1 : a.start > b.start ? -1 : 0));
 
   const byBucket: Record<Bucket, number> = { customer: 0, fg: 0, wip: 0, planned: 0 };
   const cust = new Map<string, AffectedCustomer>();

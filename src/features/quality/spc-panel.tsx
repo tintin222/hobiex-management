@@ -9,7 +9,7 @@ import type { Inspection, ProductCategory } from "@/lib/data/types";
 import { useLookups, usePlantFilter } from "@/lib/hooks";
 import { cn } from "@/lib/cn";
 import { Badge, EmptyState, IdLink, Segmented, SectionTitle, Select } from "@/components/ui";
-import { axisProps, ChartLegend, cursorProps, gridProps, lineCursor, SERIES, STATUS_COLOR, yAxisProps } from "@/components/charts/theme";
+import { axisProps, barRadius, ChartLegend, cursorProps, gridProps, lineCursor, SERIES, STATUS_COLOR, yAxisProps } from "@/components/charts/theme";
 import { capabilityTone, decimalsOf, measurementName, spcSignals, spcStats, type SpcRule } from "./lib";
 import { messages } from "./messages";
 import { TooltipCard } from "./parts";
@@ -284,7 +284,7 @@ export function SpcPanel({ inspections }: { inspections: Inspection[] }) {
                       />
                       <ReferenceLine x={model.lsl} stroke={SPEC_COLOR} strokeDasharray="2 3" strokeWidth={1.5} />
                       <ReferenceLine x={model.usl} stroke={SPEC_COLOR} strokeDasharray="2 3" strokeWidth={1.5} />
-                      <Bar dataKey="count" name={t("spc.count")} radius={[3, 3, 0, 0]} maxBarSize={20} isAnimationActive={false}>
+                      <Bar dataKey="count" name={t("spc.count")} radius={barRadius} maxBarSize={20} isAnimationActive={false}>
                         {model.bins.map((b, i) => (
                           <Cell key={i} fill={b.mid < model.lsl || b.mid > model.usl ? STATUS_COLOR.critical : SERIES[0]} />
                         ))}

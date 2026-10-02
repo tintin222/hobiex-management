@@ -91,7 +91,7 @@ export function GanttChart({
           onScroll();
           setHover(null);
         }}
-        className="relative overflow-auto overscroll-contain scroll-thin"
+        className="relative overflow-auto overscroll-x-contain scroll-thin"
         style={{ maxHeight: "max(440px, calc(100dvh - 300px))" }}
       >
         <GanttGrid {...grid} onHover={setHover} />
@@ -205,6 +205,7 @@ const GanttGrid = memo(function GanttGrid({
       suppressClick.current = false;
       return;
     }
+    onHover(null);
     onSelect(bar);
   };
   const onBarEnter = (e: ReactMouseEvent<HTMLButtonElement>, bar: Bar) => {
@@ -386,6 +387,7 @@ const GanttGrid = memo(function GanttGrid({
                 type="button"
                 onClick={() => onToggle(plant.id)}
                 aria-expanded={plantOpen}
+                title={plantOpen ? t("gantt.collapse") : t("gantt.expand")}
                 className="sticky left-0 z-10 flex items-center gap-2 bg-surface-3 px-3 text-left hover:text-brand"
               >
                 <ChevronRight className={cn("size-4 shrink-0 text-ink-3 transition-transform", plantOpen && "rotate-90")} aria-hidden />
@@ -408,6 +410,7 @@ const GanttGrid = memo(function GanttGrid({
                         type="button"
                         onClick={() => onToggle(key)}
                         aria-expanded={open}
+                        title={open ? t("gantt.collapse") : t("gantt.expand")}
                         className="sticky left-0 z-10 flex shrink-0 items-center gap-1.5 border-r border-line bg-surface-2 px-3 text-left text-[11px] font-semibold tracking-wide text-ink-2 uppercase hover:text-ink"
                         style={{ width: "var(--gl)" }}
                       >

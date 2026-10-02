@@ -558,7 +558,7 @@ function LiveCounters({ wo, op, lastReport }: { wo: WorkOrder; op: WorkOrderOper
   const remaining = Math.max(0, wo.qty - good - scrap);
   // earned standard minutes ÷ run minutes (setup spread over the lot)
   const eff = good > 0 && elapsedMin >= 1 ? ((good / wo.qty) * op.stdMinutes) / elapsedMin : undefined;
-  const effTone = eff === undefined ? "neutral" : eff >= 0.95 ? "good" : eff >= 0.8 ? "warn" : "critical";
+  const effTone = eff === undefined ? "neutral" : eff >= 0.9 ? "good" : eff >= 0.75 ? "warn" : "critical";
   const actualPerPc = good > 0 ? elapsedMin / good : undefined;
   const pctDone = (good + scrap) / Math.max(1, wo.qty);
 

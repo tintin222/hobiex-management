@@ -163,7 +163,7 @@ export function GenealogyView({ wo, unit, serial, onTrace }: { wo: WorkOrder; un
       </Card>
 
       {/* Chain */}
-      <div className="flex flex-col xl:grid xl:grid-cols-[minmax(0,1.3fr)_auto_minmax(0,0.95fr)_auto_minmax(0,1.3fr)_auto_minmax(0,1.1fr)_auto_minmax(0,1fr)]">
+      <div className="flex flex-col xl:grid xl:grid-cols-[minmax(0,1.25fr)_auto_minmax(0,1fr)_auto_minmax(0,1.25fr)_auto_minmax(0,1.05fr)_auto_minmax(0,1fr)]">
         {/* 1 · materials */}
         <Stage n={1} icon={<Flame className="size-4" />} title={t("st.materials")} subtitle={t("st.materialsSub", { n: mats.length })}>
           <ul className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
@@ -296,7 +296,7 @@ export function GenealogyView({ wo, unit, serial, onTrace }: { wo: WorkOrder; un
         <Connector />
 
         {/* 4 · quality */}
-        <Stage n={4} icon={<ShieldCheck className="size-4" />} title={t("st.quality")} subtitle={t("st.qualitySub", { n: insps.length })}>
+        <Stage n={4} icon={<ShieldCheck className="size-4" />} title={t("st.quality")} subtitle={t(insps.length === 1 ? "st.qualitySub1" : "st.qualitySub", { n: insps.length })}>
           {insps.length === 0 && ncrs.length === 0 ? (
             <p className="px-1 py-2 text-[13px] text-ink-3">{t("q.none")}</p>
           ) : (
@@ -375,13 +375,13 @@ export function GenealogyView({ wo, unit, serial, onTrace }: { wo: WorkOrder; un
                   return (
                     <div className="mt-2 rounded-lg bg-surface-2 p-2.5">
                       <div className="flex items-center gap-1.5 text-[13px] font-medium text-ink">
-                        <ModeIcon className="size-4 text-ink-3" />
+                        <ModeIcon className="size-4 shrink-0 text-ink-3" />
                         {t(`mode.${so.shipment.mode}`)} · {so.shipment.carrier}
                       </div>
-                      <div className="tabular mt-1 text-xs text-ink-2">
+                      <div className="tabular mt-1 truncate text-xs text-ink-2" title={so.shipment.tracking}>
                         {t("del.tracking")}: <span className="font-medium text-ink">{so.shipment.tracking}</span>
                       </div>
-                      <div className="mt-1 flex justify-between gap-2 text-xs text-ink-3">
+                      <div className="mt-1 flex flex-wrap justify-between gap-x-2 text-xs text-ink-3">
                         <span>
                           {t("del.shipped")} <span className="tabular text-ink-2">{fmt.date(so.shipment.shippedAt)}</span>
                         </span>

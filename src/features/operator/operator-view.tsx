@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { LogOut, UserRoundCog } from "lucide-react";
 import { useLabel, useLang, useLangStore, useT } from "@/i18n";
 import { SHIFT_HOURS, shiftOfHour, TZ_OFFSET_MS } from "@/lib/data/clock";
@@ -32,6 +32,12 @@ export function OperatorView() {
   const plant = operator ? lk.plant.get(operator.plantId) : machine ? lk.plant.get(machine.plantId) : undefined;
   const step: 1 | 2 | 3 = !operator ? 1 : !workstation ? 2 : 3;
 
+  // each step starts at the top of the terminal (the shell's <main> keeps its scroll offset)
+  const topRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    topRef.current?.scrollIntoView({ block: "start" });
+  }, [step, workstation?.id]);
+
   const setMachine = useCallback((id: string | null) => router.replace(id ? `/operator?machine=${encodeURIComponent(id)}` : "/operator", { scroll: false }), [router]);
 
   const switchOperator = () => {
@@ -40,7 +46,7 @@ export function OperatorView() {
   };
 
   return (
-    <div className="flex min-h-full flex-col bg-bg">
+    <div ref={topRef} className="flex min-h-full flex-col bg-bg">
       <TerminalHeader operator={operator} plant={plant} machine={workstation ?? (step === 1 ? machine : undefined)} onSwitch={switchOperator} />
       <div className="border-b border-line bg-surface/60 px-4 py-2.5 md:px-6">
         <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-3">

@@ -62,6 +62,7 @@ export function WorkforceView() {
     const aboveStd = employees.filter((e) => e.efficiency >= 1).length;
     const welders = employees.filter((e) => e.role === "welder");
     const certified = welders.filter(isCertifiedWelder).length;
+    const robotCertified = welders.filter((e) => e.certifications.some((c) => c.startsWith("EN ISO 14732"))).length;
     let risks = 0;
     let opsTotal = 0;
     for (const p of plants) {
@@ -73,7 +74,7 @@ export function WorkforceView() {
       opsTotal += ops.length;
       risks += ops.filter((o) => isRisk(cov.get(o)!)).length;
     }
-    return { direct, onShift, leave, sick, absent: employees.filter(isAbsent).length, avgEff, aboveStd, welders: welders.length, certified, risks, opsTotal };
+    return { direct, onShift, leave, sick, absent: employees.filter(isAbsent).length, avgEff, aboveStd, welders: welders.length, certified, robotCertified, risks, opsTotal };
   }, [employees, plants, products]);
 
   return (
@@ -100,7 +101,7 @@ export function WorkforceView() {
         />
         <KpiTile label={t("kpi.absent")} value={fmt.num(k.absent)} icon={<UserX className="size-4" />} footer={<span className="text-ink-3">{t("kpi.absentFoot", { leave: k.leave, sick: k.sick })}</span>} />
         <KpiTile label={t("kpi.efficiency")} value={fmt.pct(k.avgEff, 1)} icon={<Gauge className="size-4" />} footer={<span className="text-ink-3">{t("kpi.efficiencyFoot", { n: k.aboveStd })}</span>} />
-        <KpiTile label={t("kpi.welders")} value={`${k.certified}`} unit={`/ ${k.welders}`} icon={<BadgeCheck className="size-4" />} footer={<span className="text-ink-3">{t("kpi.weldersFoot", { n: k.welders })}</span>} />
+        <KpiTile label={t("kpi.welders")} value={`${k.certified}`} unit={`/ ${k.welders}`} icon={<BadgeCheck className="size-4" />} footer={<span className="text-ink-3">{t("kpi.weldersFoot", { n: k.robotCertified })}</span>} />
         <KpiTile
           label={t("kpi.risk")}
           value={fmt.num(k.risks)}

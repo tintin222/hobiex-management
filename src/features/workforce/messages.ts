@@ -16,7 +16,7 @@ export const messages: Messages = {
     "kpi.efficiency": "Avg. efficiency",
     "kpi.efficiencyFoot": "{n} people at or above standard",
     "kpi.welders": "Certified welders",
-    "kpi.weldersFoot": "EN ISO 9606 · of {n} welders",
+    "kpi.weldersFoot": "EN ISO 9606-1 · {n} also robot-certified",
     "kpi.risk": "Skill coverage risks",
     "kpi.riskFoot": "operations with < 2 qualified on a shift",
 
@@ -120,7 +120,7 @@ export const messages: Messages = {
     "kpi.efficiency": "Ort. verimlilik",
     "kpi.efficiencyFoot": "{n} kişi standardın üzerinde",
     "kpi.welders": "Sertifikalı kaynakçılar",
-    "kpi.weldersFoot": "EN ISO 9606 · {n} kaynakçıdan",
+    "kpi.weldersFoot": "EN ISO 9606-1 · {n} kişi robot sertifikalı",
     "kpi.risk": "Yetkinlik kapsama riskleri",
     "kpi.riskFoot": "bir vardiyada 2'den az yetkin kişi olan operasyon",
 

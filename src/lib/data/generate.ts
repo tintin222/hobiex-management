@@ -477,7 +477,7 @@ export function generateDataset(clock: Clock): Dataset {
   const freeAt = new Map<string, number>(machines.map((m) => [m.id, at(START_DAY)]));
   const workOrders: WorkOrder[] = [];
   let woNo = 10120;
-  const leadDays: Record<Priority, [number, number]> = { urgent: [1, 2], high: [2, 3], normal: [2, 6], low: [5, 9] };
+  const leadDays: Record<Priority, [number, number]> = { urgent: [2, 3], high: [2, 4], normal: [3, 7], low: [5, 10] };
   for (const dft of drafts) {
     const id = `WO-${yy}-${woNo++}`;
     let t = dft.release;

@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { AlertOctagon, CheckCircle2, ClipboardCheck, Euro, FileWarning, Gauge, LineChart, ListChecks, MessageSquareWarning, Plus, ShieldAlert, Timer } from "lucide-react";
 import { useFmt, useLabel, useT, useTx } from "@/i18n";
 import { addDays, DAY, daysBetween, localDateOf } from "@/lib/data/clock";
@@ -15,7 +15,7 @@ import { firstPassYield, setSearchParam } from "./lib";
 import { messages } from "./messages";
 import { NcrDrawer } from "./ncr-drawer";
 import { NewNcrModal, type NcrPrefill } from "./ncr-new-modal";
-import { NcrPanel } from "./ncr-panel";
+import { NcrPanel, type NcrStatusFilter } from "./ncr-panel";
 import { SeverityCount } from "./parts";
 import { DefectParetoCard, FpyTrendCard, type FpyPoint, type ParetoRow } from "./quality-charts";
 import { SpcPanel } from "./spc-panel";
@@ -44,7 +44,13 @@ export function QualityView() {
     return sp.get("insp") ? "insp" : "ncr";
   });
   const [defect, setDefect] = useState<DefectType | "all">("all");
+  const [ncrStatus, setNcrStatus] = useState<NcrStatusFilter>("not_closed");
   const [prefill, setPrefill] = useState<NcrPrefill | null>(null);
+  const tabsRef = useRef<HTMLDivElement>(null);
+  const goTab = (next: Tab) => {
+    setTab(next);
+    tabsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   const openNcr = (id: string | null) => {
     setSearchParam("insp", null);
@@ -131,7 +137,7 @@ export function QualityView() {
         subtitle={t("subtitle", { plants: plant ? tx(plant.name, plant.nameTr) : t("allPlants") })}
         actions={
           <>
-            <Button icon={<LineChart className="size-4" />} onClick={() => setTab("spc")}>
+            <Button icon={<LineChart className="size-4" />} onClick={() => goTab("spc")}>
               {t("openSpc")}
             </Button>
             <Button variant="primary" icon={<Plus className="size-4" />} onClick={() => setPrefill({})}>
@@ -154,7 +160,7 @@ export function QualityView() {
           label={t("kpi.inspToday")}
           value={fmt.num(k.inspToday)}
           icon={<ClipboardCheck className="size-4" />}
-          onClick={() => setTab("insp")}
+          onClick={() => goTab("insp")}
           footer={
             k.failedToday > 0 ? (
               <Badge tone="critical" icon={<AlertOctagon className="size-3.5" />}>
@@ -171,7 +177,10 @@ export function QualityView() {
           label={t("kpi.openNcr")}
           value={fmt.num(k.open)}
           icon={<FileWarning className="size-4" />}
-          onClick={() => setTab("ncr")}
+          onClick={() => {
+            setNcrStatus("not_closed");
+            goTab("ncr");
+          }}
           footer={
             <span className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
               <SeverityCount severity="critical" n={k.sev.critical} />
@@ -184,6 +193,10 @@ export function QualityView() {
         <KpiTile
           label={t("kpi.complaints")}
           value={fmt.num(k.complaints)}
+          onClick={() => {
+            setNcrStatus("not_closed");
+            goTab("ncr");
+          }}
           icon={<MessageSquareWarning className="size-4" />}
           footer={
             k.complaintsCritical > 0 ? (
@@ -212,12 +225,14 @@ export function QualityView() {
           active={defect}
           onPick={(d) => {
             setDefect((cur) => (cur === d ? "all" : d));
-            setTab("ncr");
+            setNcrStatus("all");
+            goTab("ncr");
           }}
         />
         <FpyTrendCard data={k.trend} />
       </div>
 
+      <div ref={tabsRef} className="scroll-mt-4" aria-hidden />
       <Card className="mt-4">
         <Tabs<Tab>
           value={tab}
@@ -229,7 +244,7 @@ export function QualityView() {
             { value: "spc", label: t("tab.spc"), icon: <LineChart className="size-4" /> },
           ]}
         />
-        {tab === "ncr" && <NcrPanel rows={ncrs} defect={defect} onDefect={setDefect} onOpen={openNcr} />}
+        {tab === "ncr" && <NcrPanel rows={ncrs} status={ncrStatus} onStatus={setNcrStatus} defect={defect} onDefect={setDefect} onOpen={openNcr} />}
         {tab === "insp" && <InspectionsPanel rows={inspections} onOpen={openInsp} />}
         {tab === "spc" && <SpcPanel inspections={inspections} />}
       </Card>

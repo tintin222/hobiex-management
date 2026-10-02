@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Activity, AlertTriangle, CalendarDays, CheckCircle2, ClipboardList, Euro, HeartPulse, Plus, ShieldCheck, Timer, Wrench, Zap } from "lucide-react";
 import { useFmt, useT, useTx } from "@/i18n";
 import { addDays } from "@/lib/data/clock";
@@ -54,6 +54,12 @@ export function MaintenanceView() {
     }
   }
   const [request, setRequest] = useState<RequestPrefill | null>(null);
+  const tabsRef = useRef<HTMLDivElement>(null);
+  const showList = (s: StatusFilter) => {
+    setStatus(s);
+    setTab("orders");
+    tabsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   const openMo = (id: string | null) => setSearchParam("mo", id);
 
@@ -128,10 +134,7 @@ export function MaintenanceView() {
           label={t("kpi.corrective")}
           value={fmt.num(k.corrective)}
           icon={<Zap className="size-4" />}
-          onClick={() => {
-            setStatus("open");
-            setTab("orders");
-          }}
+          onClick={() => showList("open")}
           footer={
             k.urgent > 0 ? (
               <Badge tone="critical" icon={<AlertTriangle className="size-3.5" />}>
@@ -148,10 +151,7 @@ export function MaintenanceView() {
           label={t("kpi.overdue")}
           value={fmt.num(k.overduePm)}
           icon={<Wrench className="size-4" />}
-          onClick={() => {
-            setStatus("overdue");
-            setTab("orders");
-          }}
+          onClick={() => showList("overdue")}
           footer={
             k.overduePm > 0 ? (
               <Badge tone="critical" icon={<AlertTriangle className="size-3.5" />}>
@@ -172,6 +172,7 @@ export function MaintenanceView() {
         />
       </div>
 
+      <div ref={tabsRef} className="scroll-mt-4" aria-hidden />
       <Card className="mt-4">
         <Tabs<Tab>
           value={tab}

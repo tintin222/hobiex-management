@@ -83,7 +83,7 @@ export function SkillsMatrix({
       {rows.length === 0 ? (
         <EmptyState icon={<Users className="size-5" />} title={t("skills.empty")} />
       ) : (
-        <div className="max-h-[68vh] overflow-auto border-t border-line scroll-thin">
+        <div className="max-h-[calc(100dvh-150px)] overflow-auto border-t border-line scroll-thin">
           <table className="w-max min-w-full border-separate border-spacing-0 text-sm">
             <thead>
               <tr>
@@ -109,7 +109,7 @@ export function SkillsMatrix({
                     <th
                       scope="row"
                       className={cn(
-                        "sticky left-0 z-10 border-r border-b border-line bg-surface px-4 py-1.5 text-left font-normal group-hover:bg-surface-2",
+                        "sticky left-0 z-10 border-r border-b border-line bg-surface px-4 py-1 text-left font-normal group-hover:bg-surface-2",
                         newShift && i > 0 && "border-t-2 border-t-line-strong",
                       )}
                     >
@@ -127,7 +127,7 @@ export function SkillsMatrix({
                     {ops.map((op) => {
                       const lv = e.skills[op] ?? 0;
                       return (
-                        <td key={op} className={cn("border-b border-line px-1.5 py-1.5 text-center group-hover:bg-surface-2", newShift && i > 0 && "border-t-2 border-t-line-strong")}>
+                        <td key={op} className={cn("border-b border-line px-1.5 py-1 text-center group-hover:bg-surface-2", newShift && i > 0 && "border-t-2 border-t-line-strong")}>
                           <span className="inline-flex justify-center">
                             <IluoGlyph level={lv} size={20} title={t("skills.cellTitle", { name: e.name, op: label("op", op), level: t(`iluo.${lv}`) })} />
                           </span>

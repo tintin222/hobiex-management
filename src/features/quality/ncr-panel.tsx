@@ -15,13 +15,19 @@ import { SourceLabel } from "./parts";
 
 const SEV_RANK = { minor: 0, major: 1, critical: 2 } as const;
 
+export type NcrStatusFilter = NcrStatus | "all" | "not_closed";
+
 export function NcrPanel({
   rows,
+  status,
+  onStatus,
   defect,
   onDefect,
   onOpen,
 }: {
   rows: Ncr[];
+  status: NcrStatusFilter;
+  onStatus: (s: NcrStatusFilter) => void;
   defect: DefectType | "all";
   onDefect: (d: DefectType | "all") => void;
   onOpen: (id: string) => void;
@@ -33,7 +39,6 @@ export function NcrPanel({
   const clock = useClock();
   const lk = useLookups();
   const [q, setQ] = useState("");
-  const [status, setStatus] = useState<NcrStatus | "all" | "not_closed">("all");
   const [severity, setSeverity] = useState<Ncr["severity"] | "all">("all");
   const [source, setSource] = useState<Ncr["source"] | "all">("all");
 
@@ -99,9 +104,9 @@ export function NcrPanel({
     <div>
       <div className="flex flex-wrap items-center gap-2 px-5 py-3">
         <SearchInput value={q} onChange={setQ} placeholder={t("f.searchNcr")} className="w-full sm:w-64" />
-        <Select value={status} onChange={(e) => setStatus(e.target.value as typeof status)} className="w-full sm:w-48" aria-label={t("col.status")}>
-          <option value="all">{t("f.allStatus")}</option>
+        <Select value={status} onChange={(e) => onStatus(e.target.value as NcrStatusFilter)} className="w-full sm:w-48" aria-label={t("col.status")}>
           <option value="not_closed">{t("f.openOnly")}</option>
+          <option value="all">{t("f.allStatus")}</option>
           {NCR_FLOW.map((s) => (
             <option key={s} value={s}>
               {label("ncrStatus", s)}

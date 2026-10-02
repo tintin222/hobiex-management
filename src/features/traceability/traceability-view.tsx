@@ -122,6 +122,8 @@ export function TraceabilityView() {
     setDraft(v);
     setSeenQ(v);
     window.history.pushState(null, "", v ? `${window.location.pathname}?q=${encodeURIComponent(v)}` : window.location.pathname);
+    // the app scrolls inside <main>, not the window
+    document.querySelector("main")?.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   let content: React.ReactNode;

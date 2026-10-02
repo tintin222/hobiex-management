@@ -276,7 +276,7 @@ export function RecallView({ hits, by, query, onTrace }: { hits: LotHit[]; by: "
               </div>
             </Card>
             <Card>
-              <CardHeader title={t("recall.countriesN")} subtitle={t("recall.affectedCustomers") + ` · ${fmt.num(recall.customers.length)}`} />
+              <CardHeader title={t("recall.countriesN")} subtitle={t("recall.byCountry")} />
               <div className="flex flex-wrap gap-1.5 px-5 pb-5">
                 {recall.countries.map((c) => (
                   <span key={c.code} className="inline-flex h-7 items-center gap-1.5 rounded-full border border-line bg-surface-2 px-2.5 text-xs">

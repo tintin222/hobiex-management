@@ -90,7 +90,7 @@ export const messages: Messages = {
     "hint.pressStart": "Check the work instructions, then press START.",
 
     "andon.title": "Help & andon",
-    "andon.breakdownSub": "Stops the machine, alerts maintenance",
+    "andon.breakdownSub": "Stops machine · alerts maintenance",
     "andon.alreadyDown": "Already reported",
     "andon.leadSub": "Urgent — team lead on your shift",
     "andon.maintSub": "Check without stopping",
@@ -273,7 +273,7 @@ export const messages: Messages = {
     "hint.pressStart": "İş talimatını kontrol edin, ardından BAŞLAT'a basın.",
 
     "andon.title": "Yardım ve andon",
-    "andon.breakdownSub": "Makineyi durdurur, bakıma haber verir",
+    "andon.breakdownSub": "Makineyi durdurur · bakımı çağırır",
     "andon.alreadyDown": "Zaten bildirildi",
     "andon.leadSub": "Acil — vardiyanızdaki takım lideri",
     "andon.maintSub": "Durdurmadan kontrol",

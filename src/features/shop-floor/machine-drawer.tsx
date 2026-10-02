@@ -7,7 +7,7 @@ import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Too
 import { useFmt, useLabel, useLang, useT, useTx } from "@/i18n";
 import { cn } from "@/lib/cn";
 import { addDays, HOUR, MIN } from "@/lib/data/clock";
-import type { Machine, MaintenanceOrder } from "@/lib/data/types";
+import type { Machine, MaintenanceOrder, WorkOrderOperation } from "@/lib/data/types";
 import { useLookups } from "@/lib/hooks";
 import { toast, useClock, useDb } from "@/lib/store";
 import {
@@ -59,7 +59,7 @@ function MachineDrawerInner({ machine: m, now, onClose }: { machine: Machine; no
   const unavailable = m.status === "down" || m.status === "maintenance";
 
   const queue = useMemo(() => {
-    const out: { woId: string; productId: string; qty: number; op: (typeof workOrders)[number]["operations"][number] }[] = [];
+    const out: { woId: string; productId: string; qty: number; op: WorkOrderOperation }[] = [];
     for (const wo of workOrders)
       for (const op of wo.operations)
         if (op.machineId === m.id && (op.status === "pending" || op.status === "ready") && op.id !== m.currentOpId) out.push({ woId: wo.id, productId: wo.productId, qty: wo.qty, op });

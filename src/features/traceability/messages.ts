@@ -54,6 +54,7 @@ export const messages: Messages = {
     "st.opsSub": "{done} of {n} done",
     "st.quality": "Quality records",
     "st.qualitySub": "{n} inspections",
+    "st.qualitySub1": "1 inspection",
     "st.delivery": "Customer delivery",
 
     "mat.perUnit": "{qty} {unit} / unit",
@@ -126,6 +127,7 @@ export const messages: Messages = {
     "recall.noneHint": "The lot is still fully in stock. Quarantine it in the warehouse to close the case.",
     "recall.affectedWos": "Affected work orders",
     "recall.affectedCustomers": "Affected customers",
+    "recall.byCountry": "Units produced or in production, by destination",
     "recall.lotCard": "Suspect material lot",
 
     "lot.material": "Material",
@@ -212,6 +214,7 @@ export const messages: Messages = {
     "st.opsSub": "{n} operasyondan {done} tanesi bitti",
     "st.quality": "Kalite kayıtları",
     "st.qualitySub": "{n} muayene",
+    "st.qualitySub1": "1 muayene",
     "st.delivery": "Müşteri teslimatı",
 
     "mat.perUnit": "Birim başına {qty} {unit}",
@@ -284,6 +287,7 @@ export const messages: Messages = {
     "recall.noneHint": "Lotun tamamı stokta. Vakayı kapatmak için depoda karantinaya alın.",
     "recall.affectedWos": "Etkilenen iş emirleri",
     "recall.affectedCustomers": "Etkilenen müşteriler",
+    "recall.byCountry": "Varış ülkesine göre üretilen veya üretimdeki adet",
     "recall.lotCard": "Şüpheli malzeme lotu",
 
     "lot.material": "Malzeme",

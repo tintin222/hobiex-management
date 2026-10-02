@@ -102,6 +102,7 @@ export function Directory({ employees, onOpen }: { employees: Employee[]; onOpen
         cell: (e) => {
           const all = Object.values(e.skills).filter((v) => (v ?? 0) > 0).length;
           const top = Object.values(e.skills).filter((v) => (v ?? 0) >= 3).length;
+          if (all === 0) return <span className="text-ink-3">—</span>;
           return (
             <span className="inline-flex items-center gap-1.5" title={t("dir.skillsTitle", { n: top, m: all })}>
               <IluoGlyph level={3} size={14} />

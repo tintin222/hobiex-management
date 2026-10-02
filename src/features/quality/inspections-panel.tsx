@@ -6,7 +6,7 @@ import { AlertOctagon, CheckCircle2, FilePlus2, GitBranch, XCircle } from "lucid
 import { useFmt, useLabel, useLang, useT, useTx } from "@/i18n";
 import { localDateOf } from "@/lib/data/clock";
 import { INSPECTION_RESULT_LABELS, INSPECTION_TYPE_LABELS } from "@/lib/data/labels";
-import type { Inspection, InspectionResult, InspectionType, Measurement, PlantId } from "@/lib/data/types";
+import type { Inspection, InspectionResult, InspectionType, Material, Measurement, PlantId } from "@/lib/data/types";
 import { useLookups, usePlantFilter } from "@/lib/hooks";
 import { useDb } from "@/lib/store";
 import { cn } from "@/lib/cn";
@@ -200,6 +200,10 @@ export function MeasurementTable({ rows }: { rows: Measurement[] }) {
   );
 }
 
+function lotOf(insp: Inspection, material: Material | undefined) {
+  return material ? material.lots.find((l) => l.receivedAt === localDateOf(Date.parse(insp.at))) : undefined;
+}
+
 export function InspectionDrawer({
   id,
   onClose,
@@ -212,26 +216,20 @@ export function InspectionDrawer({
   onOpenNcr: (id: string) => void;
 }) {
   const t = useT(messages);
-  const tx = useTx();
   const fmt = useFmt();
   const lang = useLang();
   const label = useLabel();
   const lk = useLookups();
   const inspections = useDb((db) => db.inspections);
-  const ncrsAll = useDb((db) => db.ncrs);
   const insp = id ? inspections.find((i) => i.id === id) : undefined;
-  const woId = insp?.workOrderId;
-  const ncrs = woId ? ncrsAll.filter((n) => n.workOrderId === woId) : [];
 
   const product = insp?.productId ? lk.product.get(insp.productId) : undefined;
   const material = insp?.materialId ? lk.material.get(insp.materialId) : undefined;
-  const lot = insp && material ? material.lots.find((l) => l.receivedAt === localDateOf(Date.parse(insp.at))) : undefined;
-  const failing = insp ? insp.measurements.filter((m) => !inTolerance(m)) : [];
-  const plant = insp ? lk.plant.get(insp.plantId) : undefined;
+  const lot = insp ? lotOf(insp, material) : undefined;
 
   const raise = () => {
     if (!insp || !product) return;
-    const first = failing[0];
+    const first = insp.measurements.find((m) => !inTolerance(m));
     onRaiseNcr({
       productId: product.id,
       workOrderId: insp.workOrderId,
@@ -277,75 +275,92 @@ export function InspectionDrawer({
         )
       }
     >
-      {insp && (
-        <div className="flex flex-col gap-6 px-5 py-5">
-          <KeyValue
-            items={[
-              { label: t("i.type"), value: label("inspectionType", insp.type) },
-              { label: t("i.time"), value: <span className="tabular">{fmt.dateTime(insp.at)}</span> },
-              insp.workOrderId
-                ? { label: t("d.workOrder"), value: <IdLink href={`/work-orders/${insp.workOrderId}`}>{insp.workOrderId}</IdLink> }
-                : { label: t("i.material"), value: material ? <IdLink href={`/inventory?material=${material.id}`}>{material.id}</IdLink> : "—" },
-              product
-                ? {
-                    label: t("d.product"),
-                    value: (
-                      <span className="flex min-w-0 items-baseline gap-1.5">
-                        <IdLink href={`/products/${product.id}`}>{product.sku}</IdLink>
-                        <span className="truncate text-xs font-normal text-ink-3">{label("category", product.category)}</span>
-                      </span>
-                    ),
-                  }
-                : { label: t("i.material"), value: material ? tx(material.name, material.nameTr) : "—" },
-              ...(lot ? [{ label: t("common.lot"), value: <span className="tabular">{lot.lotNo}{lot.heatNo ? ` · ${lot.heatNo}` : ""}</span> }] : []),
-              { label: t("i.inspector"), value: <PersonChip id={insp.inspectorId} size={20} /> },
-              { label: t("d.plant"), value: plant ? plant.code : insp.plantId },
-              { label: t("i.sample"), value: <span className="tabular">{fmt.num(insp.sampleSize)}</span> },
-              { label: t("i.defects"), value: <span className={cn("tabular", insp.defectsFound > 0 && "text-critical-ink")}>{fmt.num(insp.defectsFound)}</span> },
-            ]}
-          />
-
-          <section>
-            <SectionTitle>{t("i.measurements")}</SectionTitle>
-            <div
-              className={cn(
-                "mb-3 flex items-center gap-2 rounded-lg px-3 py-2 text-[13px] font-medium",
-                failing.length ? "bg-critical-soft text-critical-ink" : "bg-good-soft text-good-ink",
-              )}
-            >
-              {failing.length ? <AlertOctagon className="size-4" /> : <CheckCircle2 className="size-4" />}
-              {failing.length ? t("i.outOfTol", { n: failing.length, total: insp.measurements.length }) : t("i.allInTol", { total: insp.measurements.length })}
-            </div>
-            <MeasurementTable rows={insp.measurements} />
-          </section>
-
-          {insp.workOrderId && (
-            <section>
-              <SectionTitle>{t("i.relatedNcr")}</SectionTitle>
-              {ncrs.length === 0 ? (
-                <p className="text-[13px] text-ink-3">{t("i.noNcr")}</p>
-              ) : (
-                <ul className="divide-y divide-line rounded-xl border border-line">
-                  {ncrs.map((n) => (
-                    <li key={n.id}>
-                      <button type="button" onClick={() => onOpenNcr(n.id)} className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left hover:bg-surface-2">
-                        <span className="min-w-0">
-                          <span className="tabular block text-sm font-medium text-brand">{n.id}</span>
-                          <span className="block truncate text-xs text-ink-3">{tx(n.title, n.titleTr)}</span>
-                        </span>
-                        <span className="flex shrink-0 items-center gap-1.5">
-                          <SeverityBadge value={n.severity} />
-                          <StatusBadge kind="ncrStatus" value={n.status} />
-                        </span>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </section>
-          )}
-        </div>
-      )}
+      {insp && <InspectionDetail insp={insp} onOpenNcr={onOpenNcr} />}
     </Drawer>
+  );
+}
+
+export function InspectionDetail({ insp, onOpenNcr }: { insp: Inspection; onOpenNcr: (id: string) => void }) {
+  const t = useT(messages);
+  const tx = useTx();
+  const fmt = useFmt();
+  const label = useLabel();
+  const lk = useLookups();
+  const ncrsAll = useDb((db) => db.ncrs);
+  const ncrs = insp.workOrderId ? ncrsAll.filter((n) => n.workOrderId === insp.workOrderId) : [];
+  const product = insp.productId ? lk.product.get(insp.productId) : undefined;
+  const material = insp.materialId ? lk.material.get(insp.materialId) : undefined;
+  const lot = lotOf(insp, material);
+  const failing = insp.measurements.filter((m) => !inTolerance(m));
+  const plant = lk.plant.get(insp.plantId);
+
+  return (
+    <div className="flex flex-col gap-6 px-5 py-5">
+      <KeyValue
+        items={[
+          { label: t("i.type"), value: label("inspectionType", insp.type) },
+          { label: t("i.time"), value: <span className="tabular">{fmt.dateTime(insp.at)}</span> },
+          insp.workOrderId
+            ? { label: t("d.workOrder"), value: <IdLink href={`/work-orders/${insp.workOrderId}`}>{insp.workOrderId}</IdLink> }
+            : { label: t("i.material"), value: material ? <IdLink href={`/inventory?material=${material.id}`}>{material.id}</IdLink> : "—" },
+          product
+            ? {
+                label: t("d.product"),
+                value: (
+                  <span className="flex min-w-0 items-baseline gap-1.5">
+                    <IdLink href={`/products/${product.id}`}>{product.sku}</IdLink>
+                    <span className="truncate text-xs font-normal text-ink-3">{label("category", product.category)}</span>
+                  </span>
+                ),
+              }
+            : { label: t("i.material"), value: material ? tx(material.name, material.nameTr) : "—" },
+          ...(lot ? [{ label: t("common.lot"), value: <span className="tabular">{lot.lotNo}{lot.heatNo ? ` · ${lot.heatNo}` : ""}</span> }] : []),
+          { label: t("i.inspector"), value: <PersonChip id={insp.inspectorId} size={20} /> },
+          { label: t("d.plant"), value: plant ? plant.code : insp.plantId },
+          { label: t("i.sample"), value: <span className="tabular">{fmt.num(insp.sampleSize)}</span> },
+          { label: t("i.defects"), value: <span className={cn("tabular", insp.defectsFound > 0 && "text-critical-ink")}>{fmt.num(insp.defectsFound)}</span> },
+        ]}
+      />
+
+      <section>
+        <SectionTitle>{t("i.measurements")}</SectionTitle>
+        <div
+          className={cn(
+            "mb-3 flex items-center gap-2 rounded-lg px-3 py-2 text-[13px] font-medium",
+            failing.length ? "bg-critical-soft text-critical-ink" : "bg-good-soft text-good-ink",
+          )}
+        >
+          {failing.length ? <AlertOctagon className="size-4" /> : <CheckCircle2 className="size-4" />}
+          {failing.length ? t("i.outOfTol", { n: failing.length, total: insp.measurements.length }) : t("i.allInTol", { total: insp.measurements.length })}
+        </div>
+        <MeasurementTable rows={insp.measurements} />
+      </section>
+
+      {insp.workOrderId && (
+        <section>
+          <SectionTitle>{t("i.relatedNcr")}</SectionTitle>
+          {ncrs.length === 0 ? (
+            <p className="text-[13px] text-ink-3">{t("i.noNcr")}</p>
+          ) : (
+            <ul className="divide-y divide-line rounded-xl border border-line">
+              {ncrs.map((n) => (
+                <li key={n.id}>
+                  <button type="button" onClick={() => onOpenNcr(n.id)} className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left hover:bg-surface-2">
+                    <span className="min-w-0">
+                      <span className="tabular block text-sm font-medium text-brand">{n.id}</span>
+                      <span className="block truncate text-xs text-ink-3">{tx(n.title, n.titleTr)}</span>
+                    </span>
+                    <span className="flex shrink-0 items-center gap-1.5">
+                      <SeverityBadge value={n.severity} />
+                      <StatusBadge kind="ncrStatus" value={n.status} />
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      )}
+    </div>
   );
 }

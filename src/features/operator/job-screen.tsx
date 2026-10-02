@@ -250,76 +250,85 @@ export function JobScreen({ operator, machine, onChangeMachine }: { operator: Em
         </Banner>
       )}
 
-      <div className="grid gap-4 xl:grid-cols-12">
-        {/* Left: job, actions, andon */}
-        <div className="flex min-w-0 flex-col gap-4 xl:col-span-8">
-          {job && product ? (
-            <Card className="overflow-hidden">
-              <div className={cn("h-1.5", running ? "bg-good" : paused ? "bg-warn" : "bg-surface-3")} aria-hidden />
-              <div className="p-5">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge tone={isCurrent ? "brand" : "neutral"} className="h-7 px-2.5 text-[13px]">
-                    {isCurrent ? t("job.current") : t("job.next")}
-                  </Badge>
-                  <StatusBadge kind="opStatus" value={job.op.status} className="h-7 px-2.5 text-[13px]" />
-                  <PriorityBadge value={job.wo.priority} />
-                  {qualified ? (
-                    <Badge tone="good" icon={<BadgeCheck className="size-3.5" />}>
-                      {t("ws.qualified")} <IluoGlyph level={level} size={14} className="ml-0.5" />
+      <div className="flex flex-col gap-4 lg:grid lg:grid-cols-12 lg:items-start">
+        {/* Left: current job + work instructions */}
+        <div className="contents lg:col-span-7 lg:flex lg:min-w-0 lg:flex-col lg:gap-4 2xl:col-span-8">
+          <div className="order-1 min-w-0 lg:order-none">
+            {job && product ? (
+              <Card className="overflow-hidden">
+                <div className={cn("h-1.5", running ? "bg-good" : paused ? "bg-warn" : "bg-surface-3")} aria-hidden />
+                <div className="p-5">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge tone={isCurrent ? "brand" : "neutral"} className="h-7 px-2.5 text-[13px]">
+                      {isCurrent ? t("job.current") : t("job.next")}
                     </Badge>
-                  ) : (
-                    <Badge tone="warn" icon={<ShieldAlert className="size-3.5" />}>
-                      {t("ws.notQualified")}
-                    </Badge>
-                  )}
-                  {job.op.operatorId && job.op.operatorId !== operator.id && (
-                    <span className="ml-auto text-sm text-ink-3">{t("job.startedBy", { name: lk.employee.get(job.op.operatorId)?.name ?? job.op.operatorId })}</span>
-                  )}
+                    <StatusBadge kind="opStatus" value={job.op.status} className="h-7 px-2.5 text-[13px]" />
+                    <PriorityBadge value={job.wo.priority} />
+                    {qualified ? (
+                      <Badge tone="good" icon={<BadgeCheck className="size-3.5" />}>
+                        {t("ws.qualified")} <IluoGlyph level={level} size={14} className="ml-0.5" />
+                      </Badge>
+                    ) : (
+                      <Badge tone="warn" icon={<ShieldAlert className="size-3.5" />}>
+                        {t("ws.notQualified")}
+                      </Badge>
+                    )}
+                    {job.op.operatorId && job.op.operatorId !== operator.id && (
+                      <span className="ml-auto text-sm text-ink-3">{t("job.startedBy", { name: lk.employee.get(job.op.operatorId)?.name ?? job.op.operatorId })}</span>
+                    )}
+                  </div>
+                  <div className="mt-3 min-w-0">
+                    <h1 className="font-display text-3xl leading-tight font-semibold tracking-tight text-ink md:text-4xl">{label("op", job.op.operation)}</h1>
+                    <p className="mt-1 text-lg text-ink-2">
+                      <span className="font-semibold text-ink">{product.sku}</span> · {product.name}
+                    </p>
+                    <p className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-sm text-ink-3">
+                      <span>
+                        {t("common.workOrder")} <span className="tabular font-semibold text-ink-2">{job.wo.id}</span>
+                      </span>
+                      <span>{t("job.opOf", { seq: job.op.seq, i: idx + 1, n: job.wo.operations.length })}</span>
+                      <span>
+                        {t("common.lot")} <span className="tabular font-medium text-ink-2">{job.wo.lotNo}</span>
+                      </span>
+                      <span>{job.wo.customerId ? lk.customer.get(job.wo.customerId)?.name : t("common.makeToStock")}</span>
+                      <span>
+                        {t("common.due")} <span className="font-medium text-ink-2">{fmt.date(job.wo.dueDate)}</span>
+                      </span>
+                    </p>
+                  </div>
+                  <LiveCounters wo={job.wo} op={job.op} lastReport={lastReport?.opId === job.op.id ? lastReport : null} />
                 </div>
-                <div className="mt-3 min-w-0">
-                  <h1 className="font-display text-3xl leading-tight font-semibold tracking-tight text-ink md:text-4xl">{label("op", job.op.operation)}</h1>
-                  <p className="mt-1 text-lg text-ink-2">
-                    <span className="font-semibold text-ink">{product.sku}</span> · {product.name}
-                  </p>
-                  <p className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-sm text-ink-3">
-                    <span>
-                      {t("common.workOrder")} <span className="tabular font-semibold text-ink-2">{job.wo.id}</span>
-                    </span>
-                    <span>{t("job.opOf", { seq: job.op.seq, i: idx + 1, n: job.wo.operations.length })}</span>
-                    <span>
-                      {t("common.lot")} <span className="tabular font-medium text-ink-2">{job.wo.lotNo}</span>
-                    </span>
-                    <span>{job.wo.customerId ? lk.customer.get(job.wo.customerId)?.name : t("common.makeToStock")}</span>
-                    <span>
-                      {t("common.due")} <span className="font-medium text-ink-2">{fmt.date(job.wo.dueDate)}</span>
-                    </span>
-                  </p>
-                </div>
-                <LiveCounters wo={job.wo} op={job.op} lastReport={lastReport?.opId === job.op.id ? lastReport : null} />
-              </div>
-            </Card>
-          ) : (
-            <Card>
-              <EmptyState
-                icon={<Inbox className="size-6" />}
-                title={t("job.none")}
-                hint={t("job.noneHint")}
-                action={
-                  <BigButton tone="neutral" size="md" icon={<ArrowLeftRight className="size-5" />} onClick={onChangeMachine}>
-                    {t("mb.change")}
-                  </BigButton>
-                }
-              />
-            </Card>
+              </Card>
+            ) : (
+              <Card>
+                <EmptyState
+                  icon={<Inbox className="size-6" />}
+                  title={t("job.none")}
+                  hint={t("job.noneHint")}
+                  action={
+                    <BigButton tone="neutral" size="md" icon={<ArrowLeftRight className="size-5" />} onClick={onChangeMachine}>
+                      {t("mb.change")}
+                    </BigButton>
+                  }
+                />
+              </Card>
+            )}
+          </div>
+          {job && product && step && (
+            <div className="order-4 min-w-0 lg:order-none">
+              <Instructions wo={job.wo} op={job.op} product={product} step={step} />
+            </div>
           )}
+        </div>
 
-          {/* Action pad */}
-          <Card className="p-4">
-            <div className="grid gap-3 sm:grid-cols-3">
-              <BigButton tone="start" size="xl" icon={<Play className="size-8 fill-current" />} disabled={!canStart} onClick={start}>
+        {/* Right: the operator's thumb zone — action pad, andon, queue */}
+        <div className="contents lg:col-span-5 lg:flex lg:min-w-0 lg:flex-col lg:gap-4 2xl:col-span-4">
+          <Card className="order-2 p-4 lg:order-none">
+            <div className="grid grid-cols-2 gap-3">
+              <BigButton tone="start" size="xl" icon={<Play className="size-8 fill-current" />} disabled={!canStart} onClick={start} className="flex-col gap-1.5">
                 {paused ? t("btn.resume") : t("btn.start")}
               </BigButton>
-              <BigButton tone="pause" size="xl" icon={<Pause className="size-8 fill-current" />} disabled={!running} onClick={pause}>
+              <BigButton tone="pause" size="xl" icon={<Pause className="size-8 fill-current" />} disabled={!running} onClick={pause} className="flex-col gap-1.5">
                 {t("btn.pause")}
               </BigButton>
               <BigButton
@@ -328,20 +337,21 @@ export function JobScreen({ operator, machine, onChangeMachine }: { operator: Em
                 icon={<CheckCheck className="size-8" />}
                 disabled={!canComplete}
                 onClick={() => setDialog("complete")}
-                className={cn(canComplete && remaining === 0 && "ring-4 ring-brand/30")}
+                className={cn("col-span-2 min-h-20", canComplete && remaining === 0 && "ring-4 ring-brand/30")}
               >
                 {t("btn.complete")}
               </BigButton>
             </div>
-            <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className="mt-3 grid grid-cols-4 gap-2.5">
               {[1, 5, 10].map((n) => (
-                <BigButton key={n} tone="good" size="lg" disabled={!canReport} onClick={() => addGood(n)} aria-label={t("btn.addGood", { n })}>
-                  <span className="tabular text-2xl">+{n}</span>
-                  <span className="text-sm font-medium opacity-80">{t("btn.good")}</span>
+                <BigButton key={n} tone="good" size="lg" disabled={!canReport} onClick={() => addGood(n)} aria-label={t("btn.addGood", { n })} className="flex-col gap-0 px-2">
+                  <span className="tabular text-2xl leading-none">+{n}</span>
+                  <span className="text-xs font-medium opacity-80">{t("btn.good")}</span>
                 </BigButton>
               ))}
-              <BigButton tone="good" size="lg" icon={<Hash className="size-5" />} disabled={!canReport} onClick={() => setDialog("keypad")}>
-                {t("btn.custom")}
+              <BigButton tone="good" size="lg" disabled={!canReport} onClick={() => setDialog("keypad")} className="flex-col gap-0.5 px-2">
+                <Hash className="size-6" />
+                <span className="text-xs leading-tight font-medium">{t("btn.custom")}</span>
               </BigButton>
             </div>
             <BigButton tone="scrap" size="lg" icon={<Trash2 className="size-5" />} disabled={!canScrap} onClick={() => setDialog("scrap")} className="mt-3 w-full">
@@ -350,98 +360,97 @@ export function JobScreen({ operator, machine, onChangeMachine }: { operator: Em
             {hint && (
               <p
                 className={cn(
-                  "mt-3 flex items-center gap-2 text-sm font-medium",
+                  "mt-3 flex items-start gap-2 text-sm font-medium",
                   hint.tone === "critical" ? "text-critical-ink" : hint.tone === "warn" ? "text-warn-ink" : hint.tone === "good" ? "text-good-ink" : "text-brand-soft-ink",
                 )}
               >
-                {hint.tone === "good" ? <CheckCircle2 className="size-4" /> : hint.tone === "critical" ? <AlertOctagon className="size-4" /> : hint.tone === "warn" ? <PauseCircle className="size-4" /> : <Play className="size-4" />}
+                <span className="mt-0.5 shrink-0">
+                  {hint.tone === "good" ? <CheckCircle2 className="size-4" /> : hint.tone === "critical" ? <AlertOctagon className="size-4" /> : hint.tone === "warn" ? <PauseCircle className="size-4" /> : <Play className="size-4" />}
+                </span>
                 {hint.text}
               </p>
             )}
           </Card>
 
-          {/* Andon */}
-          <Card className="p-4">
+          <Card className="order-3 p-4 lg:order-none">
             <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold tracking-wide text-ink-3 uppercase">
               <Siren className="size-4" />
               {t("andon.title")}
             </h2>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <BigButton tone="danger" icon={<AlertOctagon className="size-6" />} disabled={down} onClick={() => setDialog("breakdown")} className="justify-start" sub={down ? t("andon.alreadyDown") : t("andon.breakdownSub")}>
+            <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+              <BigButton tone="danger" size="md" icon={<AlertOctagon className="size-6 shrink-0" />} disabled={down} onClick={() => setDialog("breakdown")} className="justify-start text-left" sub={down ? t("andon.alreadyDown") : t("andon.breakdownSub")}>
                 {t("btn.breakdown")}
               </BigButton>
-              <BigButton tone="neutral" icon={<Megaphone className="size-6" />} onClick={() => call("team_lead")} className="justify-start" sub={callSub("team_lead") ?? t("andon.leadSub")}>
+              <BigButton tone="neutral" size="md" icon={<Megaphone className="size-6 shrink-0" />} onClick={() => call("team_lead")} className="justify-start text-left" sub={callSub("team_lead") ?? t("andon.leadSub")}>
                 {t("btn.callLead")}
               </BigButton>
-              <BigButton tone="neutral" icon={<Wrench className="size-6" />} onClick={() => call("maintenance")} className="justify-start" sub={callSub("maintenance") ?? t("andon.maintSub")}>
+              <BigButton tone="neutral" size="md" icon={<Wrench className="size-6 shrink-0" />} onClick={() => call("maintenance")} className="justify-start text-left" sub={callSub("maintenance") ?? t("andon.maintSub")}>
                 {t("btn.callMaint")}
               </BigButton>
-              <BigButton tone="neutral" icon={<PackagePlus className="size-6" />} onClick={() => call("material")} className="justify-start" sub={callSub("material") ?? t("andon.materialSub")}>
+              <BigButton tone="neutral" size="md" icon={<PackagePlus className="size-6 shrink-0" />} onClick={() => call("material")} className="justify-start text-left" sub={callSub("material") ?? t("andon.materialSub")}>
                 {t("btn.material")}
               </BigButton>
             </div>
           </Card>
-        </div>
 
-        {/* Right: work instructions + queue */}
-        <div className="flex min-w-0 flex-col gap-4 xl:col-span-4">
-          {job && product && step && <Instructions wo={job.wo} op={job.op} product={product} step={step} />}
-          <Card>
-            <CardHeader title={t("queue.title")} subtitle={t("queue.subtitle", { n: queue.length, id: machine.id })} icon={<ListOrdered className="size-4" />} />
-            {queue.length === 0 ? (
-              <EmptyState icon={<Inbox className="size-5" />} title={t("queue.empty")} />
-            ) : (
-              <ul className="flex flex-col gap-2 px-4 pb-4">
-                {queue.slice(0, 5).map((j) => {
-                  const sel = !current && j === job;
-                  const held = j.wo.status === "on_hold";
-                  const p = lk.product.get(j.wo.productId);
-                  return (
-                    <li key={j.op.id}>
-                      <button
-                        type="button"
-                        disabled={!!current}
-                        onClick={() => setPicked(j.op.id)}
-                        className={cn(
-                          "flex min-h-16 w-full items-center gap-3 rounded-xl border-2 px-3 py-2.5 text-left transition-colors",
-                          sel ? "border-brand bg-brand-soft" : "border-line",
-                          current ? "cursor-default" : "hover:border-line-strong active:scale-[0.99]",
-                        )}
-                      >
-                        <span className="flex size-11 shrink-0 flex-col items-center justify-center rounded-lg bg-surface-3 leading-none">
-                          <span className="text-[10px] text-ink-3">{t("queue.op")}</span>
-                          <span className="tabular text-sm font-semibold text-ink">{j.op.seq}</span>
-                        </span>
-                        <span className="min-w-0 flex-1">
-                          <span className="block truncate text-sm font-semibold text-ink">
-                            {p?.sku} <span className="font-normal text-ink-3">· {fmt.num(j.wo.qty)} {t("common.pcs")}</span>
-                          </span>
-                          <span className="block truncate text-xs text-ink-3">
-                            {j.wo.id} · {label("op", j.op.operation)} · {fmt.dateTime(j.op.plannedStart)}
-                          </span>
-                        </span>
-                        <span className="flex shrink-0 flex-col items-end gap-1">
-                          {held ? (
-                            <Badge tone="warn" icon={<PauseCircle className="size-3.5" />}>
-                              {label("woStatus", "on_hold")}
-                            </Badge>
-                          ) : !current && j === autoNext ? (
-                            <Badge tone="brand" icon={<Play className="size-3" />}>
-                              {t("queue.next")}
-                            </Badge>
-                          ) : (
-                            <StatusBadge kind="opStatus" value={j.op.status} />
+          <div className="order-5 min-w-0 lg:order-none">
+            <Card>
+              <CardHeader title={t("queue.title")} subtitle={t("queue.subtitle", { n: queue.length, id: machine.id })} icon={<ListOrdered className="size-4" />} />
+              {queue.length === 0 ? (
+                <EmptyState icon={<Inbox className="size-5" />} title={t("queue.empty")} />
+              ) : (
+                <ul className="flex flex-col gap-2 px-4 pb-4">
+                  {queue.slice(0, 5).map((j) => {
+                    const sel = !current && j === job;
+                    const held = j.wo.status === "on_hold";
+                    const p = lk.product.get(j.wo.productId);
+                    return (
+                      <li key={j.op.id}>
+                        <button
+                          type="button"
+                          disabled={!!current}
+                          onClick={() => setPicked(j.op.id)}
+                          className={cn(
+                            "flex min-h-16 w-full items-center gap-3 rounded-xl border-2 px-3 py-2.5 text-left transition-colors",
+                            sel ? "border-brand bg-brand-soft" : "border-line",
+                            current ? "cursor-default" : "hover:border-line-strong active:scale-[0.99]",
                           )}
-                          {(j.wo.priority === "urgent" || j.wo.priority === "high") && <PriorityBadge value={j.wo.priority} compact />}
-                        </span>
-                      </button>
-                    </li>
-                  );
-                })}
-                {queue.length > 5 && <li className="px-1 pt-1 text-xs text-ink-3">{t("queue.more", { n: queue.length - 5 })}</li>}
-              </ul>
-            )}
-          </Card>
+                        >
+                          <span className="flex size-11 shrink-0 flex-col items-center justify-center rounded-lg bg-surface-3 leading-none">
+                            <span className="text-[10px] text-ink-3">{t("queue.op")}</span>
+                            <span className="tabular text-sm font-semibold text-ink">{j.op.seq}</span>
+                          </span>
+                          <span className="min-w-0 flex-1">
+                            <span className="block truncate text-sm font-semibold text-ink">
+                              {p?.sku} <span className="font-normal text-ink-3">· {fmt.num(j.wo.qty)} {t("common.pcs")}</span>
+                            </span>
+                            <span className="block truncate text-xs text-ink-3">
+                              {j.wo.id} · {label("op", j.op.operation)} · {fmt.dateTime(j.op.plannedStart)}
+                            </span>
+                          </span>
+                          <span className="flex shrink-0 flex-col items-end gap-1">
+                            {held ? (
+                              <Badge tone="warn" icon={<PauseCircle className="size-3.5" />}>
+                                {label("woStatus", "on_hold")}
+                              </Badge>
+                            ) : !current && j === autoNext ? (
+                              <Badge tone="brand" icon={<Play className="size-3" />}>
+                                {t("queue.next")}
+                              </Badge>
+                            ) : (
+                              <StatusBadge kind="opStatus" value={j.op.status} />
+                            )}
+                            {(j.wo.priority === "urgent" || j.wo.priority === "high") && <PriorityBadge value={j.wo.priority} compact />}
+                          </span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                  {queue.length > 5 && <li className="px-1 pt-1 text-xs text-ink-3">{t("queue.more", { n: queue.length - 5 })}</li>}
+                </ul>
+              )}
+            </Card>
+          </div>
         </div>
       </div>
 
@@ -640,49 +649,51 @@ function Instructions({ wo, op, product, step }: { wo: WorkOrder; op: WorkOrderO
         icon={<FileText className="size-4" />}
         actions={<Badge tone="brand">{product.drawingRev}</Badge>}
       />
-      <div className="px-5">
-        <div className="relative overflow-hidden rounded-xl border border-line bg-surface-3">
-          <Image src={product.image} alt={product.name} width={640} height={480} className="aspect-[16/10] w-full object-cover" />
-          <span className="absolute top-2 left-2 rounded-md bg-surface/90 px-2 py-0.5 text-xs font-medium text-ink shadow-sm">{label("category", product.category)}</span>
-        </div>
-      </div>
-      <CardBody className="mt-4 flex flex-col gap-5">
-        <div>
-          <div className="font-semibold text-ink">
-            {product.sku} <span className="font-normal text-ink-3">· {product.oemRef}</span>
+      <CardBody className="grid gap-5 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+        <div className="flex min-w-0 flex-col gap-4">
+          <div className="relative overflow-hidden rounded-xl border border-line bg-surface-3">
+            <Image src={product.image} alt={product.name} width={640} height={480} className="aspect-[16/10] w-full object-cover" />
+            <span className="absolute top-2 left-2 rounded-md bg-surface/90 px-2 py-0.5 text-xs font-medium text-ink shadow-sm">{label("category", product.category)}</span>
           </div>
-          <div className="text-sm text-ink-2">{product.name}</div>
-          <div className="mt-0.5 text-xs text-ink-3">
-            {product.oem} {product.model} · {product.euroNorm} · {fmt.num(product.weightKg, 1)} kg
-          </div>
-        </div>
-        <KeyValue
-          cols={2}
-          items={[
-            { label: t("wi.operation"), value: `${op.seq} · ${label("op", op.operation)}` },
-            { label: t("wi.workCenter"), value: label("wc", step.workCenterType) },
-            { label: t("wi.setup"), value: fmt.duration(step.setupMin) },
-            { label: t("wi.cycle"), value: t("wi.cycleValue", { m: fmt.num(step.cycleMin, 1) }) },
-            { label: t("wi.target"), value: `${fmt.num(wo.qty)} ${t("common.pcs")}` },
-            { label: t("wi.std"), value: fmt.duration(op.stdMinutes) },
-          ]}
-        />
-        <div>
-          <SectionTitle>{t("wi.checkpoints")}</SectionTitle>
-          <ul className="flex flex-col gap-2.5">
-            {CHECKPOINTS[op.operation].map((c) => (
-              <li key={c.en} className="flex gap-2.5 text-[15px] leading-snug text-ink">
-                <ClipboardCheck className="mt-0.5 size-5 shrink-0 text-brand" />
-                {tx(c.en, c.tr)}
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div className="flex gap-3 rounded-xl border-2 border-warn/60 bg-warn-soft p-3.5 text-warn-ink">
-          <HardHat className="mt-0.5 size-6 shrink-0" />
           <div>
-            <div className="text-xs font-semibold tracking-wide uppercase">{t("wi.safety")}</div>
-            <p className="mt-0.5 text-sm leading-snug font-medium">{tx(safety.en, safety.tr)}</p>
+            <div className="font-semibold text-ink">
+              {product.sku} <span className="font-normal text-ink-3">· {product.oemRef}</span>
+            </div>
+            <div className="text-sm text-ink-2">{product.name}</div>
+            <div className="mt-0.5 text-xs text-ink-3">
+              {product.oem} {product.model} · {product.euroNorm} · {fmt.num(product.weightKg, 1)} kg
+            </div>
+          </div>
+          <KeyValue
+            cols={2}
+            items={[
+              { label: t("wi.operation"), value: `${op.seq} · ${label("op", op.operation)}` },
+              { label: t("wi.workCenter"), value: label("wc", step.workCenterType) },
+              { label: t("wi.setup"), value: fmt.duration(step.setupMin) },
+              { label: t("wi.cycle"), value: t("wi.cycleValue", { m: fmt.num(step.cycleMin, 1) }) },
+              { label: t("wi.target"), value: `${fmt.num(wo.qty)} ${t("common.pcs")}` },
+              { label: t("wi.std"), value: fmt.duration(op.stdMinutes) },
+            ]}
+          />
+        </div>
+        <div className="flex min-w-0 flex-col gap-4">
+          <div>
+            <SectionTitle>{t("wi.checkpoints")}</SectionTitle>
+            <ul className="flex flex-col gap-2">
+              {CHECKPOINTS[op.operation].map((c) => (
+                <li key={c.en} className="flex gap-3 rounded-xl border border-line bg-surface-2 px-3.5 py-3 text-[15px] leading-snug text-ink">
+                  <ClipboardCheck className="mt-0.5 size-5 shrink-0 text-brand" />
+                  {tx(c.en, c.tr)}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="flex gap-3 rounded-xl border-2 border-warn/60 bg-warn-soft p-3.5 text-warn-ink">
+            <HardHat className="mt-0.5 size-6 shrink-0" />
+            <div>
+              <div className="text-xs font-semibold tracking-wide uppercase">{t("wi.safety")}</div>
+              <p className="mt-0.5 text-sm leading-snug font-medium">{tx(safety.en, safety.tr)}</p>
+            </div>
           </div>
         </div>
       </CardBody>

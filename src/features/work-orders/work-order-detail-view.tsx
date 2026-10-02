@@ -60,7 +60,8 @@ const linkBtn =
 export function WorkOrderDetailView({ id }: { id: string }) {
   const lk = useLookups();
   const wo = lk.workOrder.get(id);
-  return wo ? <Detail wo={wo} /> : <NotFound id={id} />;
+  // keyed so local UI state (expanded inspection, dialogs) resets when switching orders
+  return wo ? <Detail key={wo.id} wo={wo} /> : <NotFound id={id} />;
 }
 
 function NotFound({ id }: { id: string }) {

@@ -98,7 +98,7 @@ export function MaintenanceDrawer({ id, onClose }: { id: string | null; onClose:
   );
 }
 
-function MoDetail({ mo }: { mo: MaintenanceOrder }) {
+export function MoDetail({ mo }: { mo: MaintenanceOrder }) {
   const t = useT(messages);
   const tx = useTx();
   const fmt = useFmt();

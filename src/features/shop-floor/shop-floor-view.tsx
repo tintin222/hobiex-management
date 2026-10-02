@@ -88,14 +88,15 @@ export function ShopFloorView() {
   const exitTv = useCallback(() => {
     setTv(false);
     restoreTheme();
-    if (document.fullscreenElement) document.exitFullscreen().catch(() => undefined);
+    if (document.fullscreenElement) quietly(() => document.exitFullscreen());
   }, [restoreTheme]);
   const enterTv = () => {
     if (selected) closeMachine();
     prevTheme.current = document.documentElement.dataset.theme ?? "light";
     document.documentElement.dataset.theme = "dark";
     setTv(true);
-    wrapRef.current?.requestFullscreen?.().catch(() => undefined);
+    // fullscreen is a bonus: if the browser refuses, the fixed overlay still gives the andon view
+    quietly(() => wrapRef.current?.requestFullscreen?.());
   };
   useEffect(() => {
     if (!tv) return;
@@ -299,6 +300,15 @@ export function ShopFloorView() {
       {!tv && <MachineDrawer machineId={selected} now={now} onClose={closeMachine} />}
     </PageContainer>
   );
+}
+
+/** Run a fullscreen call that may throw or return a rejected (or no) promise. */
+function quietly(fn: () => Promise<void> | undefined) {
+  try {
+    fn()?.catch(() => undefined);
+  } catch {
+    /* fullscreen not available */
+  }
 }
 
 function LiveClock({ initial, className }: { initial: number; className?: string }) {

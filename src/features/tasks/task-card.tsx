@@ -95,7 +95,7 @@ export function TaskCard({
       <div className="flex items-center justify-between gap-2">
         <span className="text-[11px] font-medium text-ink-3 tabular">{task.id}</span>
         <div className="flex min-w-0 items-center gap-2">
-          <PriorityMark value={task.priority} showLabel={task.priority === "urgent"} />
+          <PriorityMark value={task.priority} showLabel={task.priority === "urgent" || task.priority === "high"} />
           <TypeChip type={task.type} />
         </div>
       </div>

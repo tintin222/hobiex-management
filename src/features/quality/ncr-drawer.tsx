@@ -136,7 +136,7 @@ function EightDStepper({ ncr }: { ncr: Ncr }) {
   );
 }
 
-function NcrDetail({ ncr, onOpenInspection }: { ncr: Ncr; onOpenInspection: (id: string) => void }) {
+export function NcrDetail({ ncr, onOpenInspection }: { ncr: Ncr; onOpenInspection: (id: string) => void }) {
   const t = useT(messages);
   const tx = useTx();
   const fmt = useFmt();

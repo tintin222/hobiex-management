@@ -968,13 +968,14 @@ export function generateDataset(clock: Clock): Dataset {
       : type === "engineering" ? plantStaff.filter((e) => e.role === "planner" || e.role === "supervisor")
       : plantStaff.filter((e) => ["operator", "welder", "team_lead"].includes(e.role));
     const est = rng.pick([0.5, 1, 1.5, 2, 3, 4, 6, 8]);
+    const priority = extra.priority ?? rng.weighted([["low", 1], ["normal", 5], ["high", 2], ["urgent", 0.6]] as const);
     const task: Task = {
       id: `TSK-${taskNo++}`,
       title,
       titleTr,
       type,
       status,
-      priority: extra.priority ?? rng.weighted([["low", 1], ["normal", 5], ["high", 2], ["urgent", 0.6]] as const),
+      priority,
       assigneeId: rng.chance(0.92) ? rng.pick(assigneePool.length ? assigneePool : plantStaff).id : undefined,
       reporterId: rng.pick(plantStaff.filter((e) => ["supervisor", "team_lead", "planner"].includes(e.role))).id,
       createdAt: iso(created),
@@ -991,7 +992,10 @@ export function generateDataset(clock: Clock): Dataset {
       tags: [],
       ...extra,
     };
+    // explicit `undefined` values in `extra` must not override computed fields
     task.status = status;
+    task.priority = priority;
+    if (status === "done") task.completedAt = iso(Math.min(now - 10 * MIN, due));
     if (task.status === "blocked" && !task.blockedReason) task.blockedReason = rng.pick(["Waiting for material", "Machine down", "Awaiting QC approval", "Missing drawing revision"]);
     tasks.push(task);
     return task;

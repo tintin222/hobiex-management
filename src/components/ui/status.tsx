@@ -120,7 +120,7 @@ export function StatusBadge<K extends LabelKind>({ kind, value, className }: { k
 
 export function PriorityBadge({ value, compact }: { value: string; compact?: boolean }) {
   const label = useLabel();
-  const [tone, Icon] = STATUS_STYLES.priority![value];
+  const [tone, Icon] = STATUS_STYLES.priority![value] ?? STATUS_STYLES.priority!.normal;
   if (compact)
     return (
       <span className="inline-flex items-center gap-1 text-xs text-ink-2" title={label("priority", value as never)}>
@@ -140,7 +140,7 @@ export function SeverityBadge({ value }: { value: "minor" | "major" | "critical"
     warning: ["warn", AlertTriangle, "Warning", "Uyarı"],
   };
   const tx = useTx();
-  const [tone, Icon, en, tr] = map[value];
+  const [tone, Icon, en, tr] = map[value] ?? map.info;
   return (
     <Badge tone={tone} icon={<Icon className="size-3.5" />}>
       {tx(en, tr)}

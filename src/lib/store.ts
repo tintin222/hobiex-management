@@ -114,6 +114,7 @@ export const actions = {
               status,
               blockedReason: status === "blocked" ? t.blockedReason ?? "Flagged from board" : undefined,
               checklist: status === "done" ? t.checklist.map((c) => ({ ...c, done: true })) : t.checklist,
+              completedAt: status === "done" ? nowIso() : undefined,
             }
           : t,
       ),

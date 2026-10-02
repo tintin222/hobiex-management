@@ -93,7 +93,7 @@ function MachineDrawerInner({ machine: m, now, onClose }: { machine: Machine; no
     <>
       <Drawer
         open
-        onClose={reportOpen ? () => setReportOpen(false) : onClose}
+        onClose={onClose}
         width="max-w-2xl"
         title={
           <span className="flex flex-wrap items-center gap-2">

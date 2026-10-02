@@ -127,7 +127,7 @@ export const LateCard = memo(function LateCard({ rows, onApply, className }: { r
             const pulls = s.kind === "move" || s.kind === "expedite" || s.kind === "overtime";
             const still = pulls && stillLate(s.newEnd, wo.dueDate);
             return (
-              <div key={wo.id} className="grid gap-x-5 gap-y-2.5 border-t border-line px-5 py-3 lg:grid-cols-[minmax(0,1fr)_auto] 2xl:grid-cols-[minmax(0,0.9fr)_auto_minmax(0,1.6fr)] 2xl:items-center">
+              <div key={wo.id} className="grid gap-x-5 gap-y-2.5 border-t border-line px-5 py-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
                     <IdLink href={`/work-orders/${wo.id}`}>{wo.id}</IdLink>
@@ -151,7 +151,7 @@ export const LateCard = memo(function LateCard({ rows, onApply, className }: { r
                     <div className="font-semibold text-critical-ink">{row.overdue ? t("late.overdue") : t("late.hours", { n: fmt.num(row.delayMin / 60, 1) })}</div>
                   </div>
                 </div>
-                <div className="flex min-w-0 items-start gap-3 rounded-lg bg-surface-2 px-3 py-2 lg:col-span-2 2xl:col-span-1">
+                <div className="flex min-w-0 items-start gap-3 rounded-lg bg-surface-2 px-3 py-2 sm:col-span-2">
                   <Lightbulb className="mt-0.5 size-4 shrink-0 text-brand" aria-hidden />
                   <div className="min-w-0 flex-1 text-[13px] leading-snug text-ink-2">
                     {suggestionText(row, t, fmt, label)}

@@ -297,6 +297,7 @@ export interface Task {
   comments: TaskComment[];
   tags: string[];
   blockedReason?: string;
+  completedAt?: ISODateTime;
 }
 
 export type InspectionType = "incoming" | "first_article" | "in_process" | "leak_test" | "final";

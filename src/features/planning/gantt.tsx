@@ -283,7 +283,7 @@ const GanttGrid = memo(function GanttGrid({
               <span className="text-[13px] font-semibold text-ink tabular">{m.id}</span>
               <StatusMini status={m.status} compactOnMobile />
             </div>
-            <div className="truncate text-[11px] leading-tight text-ink-3" title={m.model}>
+            <div className="truncate text-[11px] leading-tight text-ink-3" title={`${m.name} · ${m.model}`}>
               {m.model}
             </div>
           </div>

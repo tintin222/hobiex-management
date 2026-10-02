@@ -59,13 +59,16 @@ export function PlanningView() {
   const workOrders = useByPlant(workOrdersAll);
 
   const [zoom, setZoom] = useState<Zoom>("3d");
-  const [wc, setWc] = useState<WorkCenterType | "all">("all");
+  const [wcChoice, setWc] = useState<WorkCenterType | "all">("all");
   const [query, setQuery] = useState("");
   const [collapsed, setCollapsed] = useState<Set<string>>(() => new Set());
   const [sel, setSel] = useState<OpSelection | null>(null);
   const [flashKey, setFlashKey] = useState<string | null>(null);
   const [view, setView] = useState({ w: 0, left: 228 });
   const now = useTickingNow(clock.now);
+  const typeOptions = useMemo(() => [...new Set(machinesInPlant.map((m) => m.type))], [machinesInPlant]);
+  // a type picked for another plant falls back to "all" when the plant filter changes
+  const wc = wcChoice !== "all" && typeOptions.includes(wcChoice) ? wcChoice : "all";
 
   const windowStart = clock.dayStart - DAY;
   const windowEnd = windowStart + DAYS * DAY;
@@ -168,7 +171,6 @@ export function PlanningView() {
       .filter((g) => g.types.length > 0);
   }, [plantsAll, machinesAll, plantFilter, wc]);
   const visibleMachines = useMemo(() => groups.flatMap((g) => g.types.flatMap((x) => x.machines)), [groups]);
-  const typeOptions = useMemo(() => [...new Set(machinesInPlant.map((m) => m.type))], [machinesInPlant]);
   const siblings = useMemo(() => {
     const out = new Map<string, Machine[]>();
     for (const m of machinesAll) {

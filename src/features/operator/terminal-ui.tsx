@@ -26,7 +26,7 @@ const TONES: Record<BigTone, string> = {
 const SIZES = {
   md: "min-h-14 gap-2 rounded-xl px-4 text-base",
   lg: "min-h-16 gap-2.5 rounded-2xl px-5 text-lg",
-  xl: "min-h-24 gap-3 rounded-2xl px-6 text-2xl tracking-wide",
+  xl: "min-h-24 gap-3 rounded-2xl px-4 text-2xl tracking-wide",
 };
 
 export interface BigButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {

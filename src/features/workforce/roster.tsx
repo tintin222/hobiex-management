@@ -249,11 +249,16 @@ function OnShiftNow({
                         <Avatar name={e.name} hue={e.avatarHue} size={34} />
                         <span className="min-w-0 flex-1">
                           <span className="block truncate text-sm font-medium text-ink">{e.name}</span>
-                          <span className="block truncate text-xs text-ink-3">
-                            {label("role", e.role)} · {mId ? t("roster.at", { machine: mId }) : t("roster.noMachine")}
-                          </span>
+                          <span className="block truncate text-xs text-ink-3">{label("role", e.role)}</span>
                         </span>
-                        <span className={cn("tabular text-xs font-medium", efficiencyTone(e.efficiency) === "warn" ? "text-warn-ink" : "text-ink-2")}>{fmt.pct(e.efficiency)}</span>
+                        <span className="flex shrink-0 flex-col items-end gap-1">
+                          {mId && (
+                            <span className="tabular rounded-md bg-brand-soft px-1.5 py-0.5 text-[11px] font-semibold text-brand-soft-ink" title={t("roster.at", { machine: mId })}>
+                              {mId}
+                            </span>
+                          )}
+                          <span className={cn("tabular text-xs font-medium", efficiencyTone(e.efficiency) === "warn" ? "text-warn-ink" : "text-ink-2")}>{fmt.pct(e.efficiency)}</span>
+                        </span>
                       </button>
                     );
                   })}

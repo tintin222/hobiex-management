@@ -86,7 +86,7 @@ export function ProductsView() {
           </span>
         ),
       },
-      { key: "euro", header: t("col.euro"), hideBelow: "xl", sortValue: (p) => p.euroNorm, cell: (p) => <span className="text-xs whitespace-nowrap text-ink-2">{p.euroNorm}</span> },
+      { key: "euro", header: t("col.euro"), hideBelow: "2xl", sortValue: (p) => p.euroNorm, cell: (p) => <span className="text-xs whitespace-nowrap text-ink-2">{p.euroNorm}</span> },
       { key: "plant", header: t("common.plant"), hideBelow: "lg", sortValue: (p) => p.plantId, cell: (p) => <span className="tabular text-xs text-ink-2">{lk.plant.get(p.plantId)?.code}</span> },
       { key: "price", header: t("col.price"), align: "right", sortValue: (p) => p.listPriceEur, cell: (p) => <span className="font-medium">{fmt.eur(p.listPriceEur)}</span> },
       {
@@ -98,7 +98,7 @@ export function ProductsView() {
         cell: (p) => <span className="text-ink-2">{fmt.pct(1 - p.unitCostEur / p.listPriceEur, 1)}</span>,
       },
       { key: "stock", header: t("col.stock"), sortValue: (p) => p.stockQty / Math.max(1, p.safetyStock), cell: (p) => <StockMini product={p} className="w-40" /> },
-      { key: "demand", header: t("col.demand"), align: "right", hideBelow: "xl", sortValue: (p) => p.monthlyDemand, cell: (p) => <span className="text-ink-2">{fmt.num(p.monthlyDemand)}</span> },
+      { key: "demand", header: t("col.demand"), align: "right", hideBelow: "2xl", sortValue: (p) => p.monthlyDemand, cell: (p) => <span className="text-ink-2">{fmt.num(p.monthlyDemand)}</span> },
     ],
     [t, fmt, label, lk],
   );

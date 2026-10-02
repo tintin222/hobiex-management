@@ -28,7 +28,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   if (!ready)
     return (
       <div className="flex h-dvh flex-col items-center justify-center gap-4 bg-bg">
-        <Image src="/brand/logo.png" alt="Hobiex" width={180} height={36} preload />
+        <Image src="/brand/logo.png" alt="Hobiex" width={180} height={36} />
         <div className="h-1 w-48 overflow-hidden rounded-full bg-surface-3">
           <div className="h-full w-1/2 animate-pulse rounded-full bg-brand" />
         </div>

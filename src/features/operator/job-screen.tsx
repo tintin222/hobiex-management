@@ -32,7 +32,7 @@ import {
 } from "lucide-react";
 import { useFmt, useLabel, useT, useTx } from "@/i18n";
 import { MIN } from "@/lib/data/clock";
-import { DEFECT_LABELS, OP_LABELS } from "@/lib/data/labels";
+import { DEFECT_LABELS, HOLD_REASON_TR, OP_LABELS } from "@/lib/data/labels";
 import type { DefectType, Employee, Machine, Product, RoutingStep, WorkOrder, WorkOrderOperation } from "@/lib/data/types";
 import { useLookups } from "@/lib/hooks";
 import { toast, useDb } from "@/lib/store";
@@ -236,7 +236,7 @@ export function JobScreen({ operator, machine, onChangeMachine }: { operator: Em
       )}
       {job && onHold && (
         <Banner tone="warn" icon={<PauseCircle className="size-9" />} title={t("hold.title", { wo: job.wo.id })} actions={<BigButton tone="neutral" size="md" icon={<Megaphone className="size-5" />} onClick={() => call("team_lead")}>{t("btn.callLead")}</BigButton>}>
-          {job.wo.holdReason}
+          {job.wo.holdReason && tx(job.wo.holdReason, HOLD_REASON_TR[job.wo.holdReason])}
         </Banner>
       )}
       {job && !qualified && (

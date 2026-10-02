@@ -354,10 +354,10 @@ export function generateDataset(clock: Clock): Dataset {
     return [...ops];
   };
   const staffPlan: Record<PlantId, [EmployeeRole, number][]> = {
-    P1: [["supervisor", 2], ["team_lead", 3], ["planner", 1], ["qc_inspector", 4], ["maintenance_tech", 3], ["warehouse", 2], ["welder", 12], ["operator", 19]],
-    P2: [["supervisor", 1], ["team_lead", 3], ["planner", 1], ["qc_inspector", 3], ["maintenance_tech", 3], ["warehouse", 2], ["welder", 9], ["operator", 16]],
-    P3: [["supervisor", 1], ["team_lead", 3], ["planner", 1], ["qc_inspector", 3], ["maintenance_tech", 2], ["warehouse", 2], ["welder", 5], ["operator", 13]],
-    P4: [["supervisor", 1], ["team_lead", 3], ["planner", 1], ["qc_inspector", 2], ["maintenance_tech", 2], ["warehouse", 1], ["welder", 6], ["operator", 10]],
+    P1: [["supervisor", 3], ["team_lead", 6], ["planner", 2], ["qc_inspector", 6], ["maintenance_tech", 6], ["warehouse", 4], ["welder", 27], ["operator", 42]],
+    P2: [["supervisor", 3], ["team_lead", 6], ["planner", 1], ["qc_inspector", 6], ["maintenance_tech", 3], ["warehouse", 3], ["welder", 21], ["operator", 33]],
+    P3: [["supervisor", 3], ["team_lead", 3], ["planner", 1], ["qc_inspector", 6], ["maintenance_tech", 3], ["warehouse", 3], ["welder", 12], ["operator", 30]],
+    P4: [["supervisor", 3], ["team_lead", 3], ["planner", 1], ["qc_inspector", 3], ["maintenance_tech", 3], ["warehouse", 3], ["welder", 15], ["operator", 21]],
   };
   const weldOps: OperationType[] = ["robotic_welding", "manual_welding", "seam_welding"];
   let empNo = 1001;
@@ -375,7 +375,10 @@ export function generateDataset(clock: Clock): Dataset {
           certs.push(rng.pick(["EN ISO 9606-1 · 135 P BW", "EN ISO 9606-1 · 135 P FW", "EN ISO 9606-1 · 141 T BW"]));
           if (rng.chance(0.4)) certs.push("EN ISO 14732 · Robot welding operator");
         } else if (role === "operator" || role === "team_lead") {
-          rng.sample(ops.filter((o) => !weldOps.includes(o)), rng.int(3, 6)).forEach((o) => (skills[o] = rng.int(1, role === "team_lead" ? 4 : 3)));
+          // rotate through the plant's operations so every station has trained people on every shift
+          const pool = ops.filter((o) => !weldOps.includes(o));
+          const k = rng.int(3, 5);
+          for (let j = 0; j < k; j++) skills[pool[(i * 2 + j) % pool.length]] = rng.weighted([[1, 1], [2, 2], [3, 3.5], [4, role === "team_lead" ? 3 : 1]] as const);
           if (role === "team_lead") {
             ops.forEach((o) => (skills[o] = Math.max(skills[o] ?? 0, rng.int(2, 4))));
             certs.push("Lean / 5S Practitioner");
@@ -383,6 +386,7 @@ export function generateDataset(clock: Clock): Dataset {
           if (rng.chance(0.3)) certs.push("Forklift licence");
         } else if (role === "qc_inspector") {
           (["leak_test", "pressure_test", "final_inspection"] as OperationType[]).filter((o) => ops.includes(o)).forEach((o) => (skills[o] = rng.int(3, 4)));
+          if (ops.includes("painting") && rng.chance(0.5)) skills.painting = 3;
           certs.push("VT Level 2 · EN ISO 9712");
           if (rng.chance(0.5)) certs.push("LT Level 2 · EN ISO 9712");
           if (rng.chance(0.4)) certs.push("IATF 16949 Internal Auditor");
@@ -390,7 +394,7 @@ export function generateDataset(clock: Clock): Dataset {
           certs.push(rng.pick(["Hydraulics L2", "Industrial Electrics L3", "Robot programming (6-axis)"]));
           certs.push("LOTO authorised");
         } else if (role === "warehouse") {
-          skills.packing = rng.int(2, 4);
+          skills.packing = rng.int(3, 4);
           certs.push("Forklift licence");
         } else if (role === "supervisor") {
           ops.forEach((o) => (skills[o] = rng.int(2, 4)));
@@ -422,6 +426,7 @@ export function generateDataset(clock: Clock): Dataset {
   const plannerOf = (pid: PlantId) => employees.find((e) => e.plantId === pid && e.role === "planner")!.id;
 
   // ───────────────────────────── Customers ─────────────────────────────
+  rng = new Rng(SEED + 3);
   const customers: Customer[] = CUSTOMERS.map(([name, cc, city, segment, channel], i) => ({
     id: `C${String(101 + i)}`,
     name,
@@ -436,6 +441,7 @@ export function generateDataset(clock: Clock): Dataset {
   }));
 
   // ───────────────────── Work orders + finite-capacity schedule ─────────────────────
+  rng = new Rng(SEED + 5);
   const START_DAY = -21;
   const END_DAY = 12;
   const qtyRange: Record<ProductCategory, [number, number, number]> = {
@@ -477,7 +483,7 @@ export function generateDataset(clock: Clock): Dataset {
   const freeAt = new Map<string, number>(machines.map((m) => [m.id, at(START_DAY)]));
   const workOrders: WorkOrder[] = [];
   let woNo = 10120;
-  const leadDays: Record<Priority, [number, number]> = { urgent: [2, 3], high: [2, 4], normal: [3, 7], low: [5, 10] };
+  const leadDays: Record<Priority, [number, number]> = { urgent: [1, 3], high: [2, 4], normal: [2, 7], low: [5, 10] };
   for (const dft of drafts) {
     const id = `WO-${yy}-${woNo++}`;
     let t = dft.release;
@@ -1089,7 +1095,7 @@ export function generateDataset(clock: Clock): Dataset {
     const product = productById.get(wo.productId)!;
     const pushInsp = (type: InspectionType, atMs: number, failP: number) => {
       if (atMs > now) return;
-      const result = rng.chance(failP) ? "fail" : rng.chance(0.035) ? "conditional" : "pass";
+      const result = rng.chance(failP) ? "fail" : rng.chance(0.015) ? "conditional" : "pass";
       inspections.push({
         id: `QI-${yy}-${qiNo++}`,
         type,
@@ -1105,11 +1111,11 @@ export function generateDataset(clock: Clock): Dataset {
       });
     };
     const first = wo.operations[0];
-    if (first.actualStart && rng.chance(0.55)) pushInsp("first_article", Date.parse(first.actualStart) + 40 * MIN, 0.03);
+    if (first.actualStart && rng.chance(0.55)) pushInsp("first_article", Date.parse(first.actualStart) + 40 * MIN, 0.015);
     const leak = wo.operations.find((o) => (o.operation === "leak_test" || o.operation === "pressure_test") && o.status === "done");
-    if (leak && rng.chance(0.5)) pushInsp("leak_test", Date.parse(leak.actualEnd!) - 20 * MIN, 0.05);
-    if (wo.status === "completed" && rng.chance(0.6)) pushInsp("final", Date.parse(wo.actualEnd!) - 15 * MIN, 0.035);
-    else if (rng.chance(0.2)) pushInsp("in_process", Math.min(now - 30 * MIN, Date.parse(wo.actualStart ?? wo.plannedStart) + 6 * HOUR), 0.06);
+    if (leak && rng.chance(0.5)) pushInsp("leak_test", Date.parse(leak.actualEnd!) - 20 * MIN, 0.022);
+    if (wo.status === "completed" && rng.chance(0.6)) pushInsp("final", Date.parse(wo.actualEnd!) - 15 * MIN, 0.012);
+    else if (rng.chance(0.2)) pushInsp("in_process", Math.min(now - 30 * MIN, Date.parse(wo.actualStart ?? wo.plannedStart) + 6 * HOUR), 0.025);
   }
   for (const mat of materials) {
     for (const lot of mat.lots) {

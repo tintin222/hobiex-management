@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useCallback, useMemo } from "react";
 import { BadgeCheck, CalendarClock, Contact, Gauge, Grid3x3, ShieldAlert, Tablet, UserCheck, Users, UserX } from "lucide-react";
 import { useFmt, useT, useTx } from "@/i18n";
@@ -25,7 +25,6 @@ export function WorkforceView() {
   const tx = useTx();
   const fmt = useFmt();
   const clock = useClock();
-  const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
   const plantFilter = usePlantFilter();
@@ -48,9 +47,10 @@ export function WorkforceView() {
       if (value) next.set(key, value);
       else next.delete(key);
       const qs = next.toString();
-      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+      // client-only URL state: Next syncs useSearchParams with history.replaceState, no server round-trip
+      window.history.replaceState(null, "", qs ? `${pathname}?${qs}` : pathname);
     },
-    [params, pathname, router],
+    [params, pathname],
   );
 
   const k = useMemo(() => {

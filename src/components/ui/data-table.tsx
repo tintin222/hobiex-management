@@ -16,10 +16,10 @@ export interface Column<T> {
   className?: string;
   headerClassName?: string;
   /** hide below a breakpoint */
-  hideBelow?: "sm" | "md" | "lg" | "xl";
+  hideBelow?: "sm" | "md" | "lg" | "xl" | "2xl";
 }
 
-const hideCls = { sm: "hidden sm:table-cell", md: "hidden md:table-cell", lg: "hidden lg:table-cell", xl: "hidden xl:table-cell" };
+const hideCls = { sm: "hidden sm:table-cell", md: "hidden md:table-cell", lg: "hidden lg:table-cell", xl: "hidden xl:table-cell", "2xl": "hidden 2xl:table-cell" };
 
 export function DataTable<T>({
   rows,
@@ -46,7 +46,11 @@ export function DataTable<T>({
 }) {
   const t = useT();
   const [sort, setSort] = useState(initialSort);
-  const [page, setPage] = useState(0);
+  // a filter/search that changes the row count starts again at page 1; live
+  // updates that keep the same rows (e.g. shop-floor counters) keep the page
+  const [pageState, setPageState] = useState({ count: rows.length, page: 0 });
+  const page = pageState.count === rows.length ? pageState.page : 0;
+  const setPage = (n: number) => setPageState({ count: rows.length, page: n });
 
   const sorted = useMemo(() => {
     if (!sort) return rows;

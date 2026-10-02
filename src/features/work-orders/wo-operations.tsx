@@ -85,7 +85,7 @@ export function WoOperations({ wo }: { wo: WorkOrder }) {
               <th className="px-3 font-medium">{t("ops.col.window")}</th>
               <th className="px-3 text-right font-medium">{t("ops.col.time")}</th>
               <th className="px-3 text-right font-medium">{t("ops.col.qty")}</th>
-              <th className="w-[26%] min-w-60 pr-5 pl-3 font-medium">
+              <th className="w-[24%] min-w-52 pr-5 pl-3 font-medium">
                 <div className="flex justify-between gap-2 tabular">
                   <span>{fmt.dateTime(win.start)}</span>
                   <span>{fmt.dateTime(win.end)}</span>

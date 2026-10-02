@@ -170,9 +170,10 @@ export function openCorrective(m: Machine, maintenance: MaintenanceOrder[]): Mai
   return open.find((x) => x.title === m.downReason) ?? open[0];
 }
 
-/** Bilingual down reason: from the corrective order when there is one. */
+/** Bilingual down reason: the machine's own TR text, else the corrective order's, else our reason list. */
 export function downReason(m: Machine, maintenance: MaintenanceOrder[]): L | undefined {
   if (!m.downReason) return undefined;
+  if (m.downReasonTr && m.downReasonTr !== m.downReason) return { en: m.downReason, tr: m.downReasonTr };
   const mo = openCorrective(m, maintenance);
   if (mo && mo.title === m.downReason) return { en: mo.title, tr: mo.titleTr };
   return { en: m.downReason, tr: reasonTr(m.downReason) ?? m.downReason };

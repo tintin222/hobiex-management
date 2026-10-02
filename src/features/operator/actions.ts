@@ -140,6 +140,7 @@ export const terminal = {
         workOrders: db.workOrders.map((w) => (w.id === m!.currentWoId ? { ...w, operations: w.operations.map((o) => (o.id === cur.id ? { ...o, status: prev } : o)) } : w)),
       }));
     }
+    patchDb((db) => ({ machines: db.machines.map((x) => (x.id === machineId ? { ...x, downReasonTr: reason.tr } : x)) }));
     const mo = getDb().maintenance.find((x) => x.machineId === machineId && x.type === "corrective" && x.title === reason.en && x.status !== "completed");
     if (mo) actions.updateMaintenance(mo.id, { titleTr: reason.tr });
     return mo;

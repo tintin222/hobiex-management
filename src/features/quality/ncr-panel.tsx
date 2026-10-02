@@ -58,13 +58,13 @@ export function NcrPanel({
   const columns = useMemo<Column<Ncr>[]>(
     () => [
       { key: "id", header: t("col.ncr"), cell: (n) => <span className="tabular font-medium whitespace-nowrap text-brand">{n.id}</span>, sortValue: (n) => n.id },
-      { key: "title", header: t("col.title"), cell: (n) => <div className="max-w-64 min-w-40 truncate text-ink">{tx(n.title, n.titleTr)}</div>, sortValue: (n) => tx(n.title, n.titleTr) },
+      { key: "title", header: t("col.title"), cell: (n) => <div className="max-w-60 min-w-40 truncate text-ink">{tx(n.title, n.titleTr)}</div>, sortValue: (n) => tx(n.title, n.titleTr) },
       { key: "product", header: t("col.product"), cell: (n) => <span className="tabular whitespace-nowrap text-ink-2">{lk.product.get(n.productId)?.sku}</span>, hideBelow: "md" },
-      { key: "defect", header: t("col.defect"), cell: (n) => <span className="whitespace-nowrap text-ink-2">{label("defect", n.defectType)}</span>, sortValue: (n) => n.defectType, hideBelow: "xl" },
+      { key: "defect", header: t("col.defect"), cell: (n) => <span className="whitespace-nowrap text-ink-2">{label("defect", n.defectType)}</span>, sortValue: (n) => n.defectType, hideBelow: "2xl" },
       { key: "severity", header: t("col.severity"), cell: (n) => <SeverityBadge value={n.severity} />, sortValue: (n) => SEV_RANK[n.severity] },
-      { key: "source", header: t("col.source"), cell: (n) => <SourceLabel source={n.source} />, sortValue: (n) => n.source, hideBelow: "lg" },
+      { key: "source", header: t("col.source"), cell: (n) => <SourceLabel source={n.source} />, sortValue: (n) => n.source, hideBelow: "2xl" },
       { key: "qty", header: t("col.qty"), cell: (n) => fmt.num(n.qtyAffected), sortValue: (n) => n.qtyAffected, align: "right", hideBelow: "md" },
-      { key: "owner", header: t("col.owner"), cell: (n) => <PersonChip id={n.ownerId} size={20} className="max-w-40" />, hideBelow: "xl" },
+      { key: "owner", header: t("col.owner"), cell: (n) => <PersonChip id={n.ownerId} size={20} className="max-w-40" />, hideBelow: "2xl" },
       {
         key: "opened",
         header: t("col.opened"),

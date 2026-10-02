@@ -255,7 +255,7 @@ function ProductDetail({ product: p }: { product: Product }) {
               <thead>
                 <tr className="border-y border-line text-left text-xs text-ink-3">
                   <th className="px-5 py-2 font-medium">{t("bom.material")}</th>
-                  <th className="hidden px-3 py-2 font-medium lg:table-cell">{t("common.category")}</th>
+                  <th className="hidden px-3 py-2 font-medium 2xl:table-cell">{t("common.category")}</th>
                   <th className="px-3 py-2 text-right font-medium">{t("bom.qty")}</th>
                   <th className="hidden px-3 py-2 text-right font-medium sm:table-cell">{t("bom.unitCost")}</th>
                   <th className="px-3 py-2 text-right font-medium">{t("bom.ext")}</th>
@@ -269,7 +269,7 @@ function ProductDetail({ product: p }: { product: Product }) {
                       <IdLink href={`/inventory?material=${line.materialId}`}>{line.materialId}</IdLink>
                       <div className="max-w-64 truncate text-xs text-ink-3">{m ? tx(m.name, m.nameTr) : ""}</div>
                     </td>
-                    <td className="hidden px-3 py-2.5 text-xs text-ink-2 lg:table-cell">{m ? label("materialCategory", m.category) : ""}</td>
+                    <td className="hidden px-3 py-2.5 text-xs text-ink-2 2xl:table-cell">{m ? label("materialCategory", m.category) : ""}</td>
                     <td className="tabular px-3 py-2.5 text-right whitespace-nowrap">
                       {fmt.num(line.qtyPerUnit, 2)} <span className="text-xs text-ink-3">{m ? unit(m.unit) : ""}</span>
                     </td>
@@ -291,7 +291,7 @@ function ProductDetail({ product: p }: { product: Product }) {
               <tfoot>
                 <tr className="border-t border-line bg-surface-2">
                   <td className="px-5 py-2.5 text-[13px] font-medium whitespace-nowrap text-ink-2">{t("bom.total")}</td>
-                  <td className="hidden lg:table-cell" />
+                  <td className="hidden 2xl:table-cell" />
                   <td />
                   <td className="hidden sm:table-cell" />
                   <td className="tabular px-3 py-2.5 text-right font-semibold text-ink">{fmt.eur(materialCost, true)}</td>

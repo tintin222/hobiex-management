@@ -219,7 +219,7 @@ function MaterialsTab({ materials, onOpen, openId }: { materials: Material[]; on
       {
         key: "category",
         header: t("common.category"),
-        hideBelow: "xl",
+        hideBelow: "2xl",
         sortValue: (m) => m.category,
         cell: (m) => <span className="block max-w-44 truncate text-xs text-ink-2">{label("materialCategory", m.category)}</span>,
       },
@@ -234,13 +234,13 @@ function MaterialsTab({ materials, onOpen, openId }: { materials: Material[]; on
           </span>
         ),
       },
-      { key: "reserved", header: t("col.reserved"), align: "right", hideBelow: "lg", sortValue: (m) => m.reserved, cell: (m) => <span className="text-ink-2">{fmt.num(m.reserved)}</span> },
+      { key: "reserved", header: t("col.reserved"), align: "right", hideBelow: "2xl", sortValue: (m) => m.reserved, cell: (m) => <span className="text-ink-2">{fmt.num(m.reserved)}</span> },
       { key: "available", header: t("col.available"), align: "right", hideBelow: "md", sortValue: (m) => m.onHand - m.reserved, cell: (m) => fmt.num(m.onHand - m.reserved) },
       {
         key: "onOrder",
         header: t("col.onOrder"),
         align: "right",
-        hideBelow: "lg",
+        hideBelow: "2xl",
         sortValue: (m) => m.onOrder,
         cell: (m) => (m.onOrder > 0 ? <span className="text-ink-2">{fmt.num(m.onOrder)}</span> : <span className="text-ink-3">—</span>),
       },
@@ -251,11 +251,11 @@ function MaterialsTab({ materials, onOpen, openId }: { materials: Material[]; on
         sortValue: (m) => materialCover(m),
         cell: (m) => <CoverCell days={materialCover(m)} state={materialState(m)} />,
       },
-      { key: "location", header: t("col.location"), hideBelow: "xl", sortValue: (m) => m.location, cell: (m) => <span className="tabular text-xs whitespace-nowrap text-ink-2">{m.location}</span> },
+      { key: "location", header: t("col.location"), hideBelow: "2xl", sortValue: (m) => m.location, cell: (m) => <span className="tabular text-xs whitespace-nowrap text-ink-2">{m.location}</span> },
       {
         key: "supplier",
         header: t("col.supplier"),
-        hideBelow: "lg",
+        hideBelow: "2xl",
         sortValue: (m) => m.supplier,
         cell: (m) => (
           <span className="block max-w-40 truncate text-xs text-ink-2" title={m.supplier}>

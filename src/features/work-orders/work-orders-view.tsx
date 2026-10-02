@@ -146,7 +146,7 @@ export function WorkOrdersView() {
         header: t("common.product"),
         sortValue: (r) => r.product.sku,
         cell: (r) => (
-          <div className="max-w-64 min-w-40">
+          <div className="max-w-56 min-w-36">
             <div className="font-semibold text-ink">{r.product.sku}</div>
             <div className="truncate text-xs text-ink-3" title={r.product.name}>
               {r.product.name}
@@ -161,7 +161,7 @@ export function WorkOrdersView() {
         sortValue: (r) => r.customer?.name ?? "~",
         cell: (r) =>
           r.customer ? (
-            <div className="max-w-48">
+            <div className="max-w-44">
               <div className="truncate text-ink-2" title={r.customer.name}>
                 {r.customer.name}
               </div>
@@ -208,7 +208,7 @@ export function WorkOrdersView() {
       {
         key: "where",
         header: t("col.where"),
-        hideBelow: "md",
+        hideBelow: "2xl",
         sortValue: (r) => `${r.plantCode}${r.cur?.machineId ?? ""}`,
         cell: (r) => (
           <div className="text-xs whitespace-nowrap">
@@ -220,7 +220,7 @@ export function WorkOrdersView() {
       {
         key: "window",
         header: t("col.schedule"),
-        hideBelow: "xl",
+        hideBelow: "2xl",
         sortValue: (r) => r.wo.plannedStart,
         cell: (r) => (
           <span className="text-xs whitespace-nowrap text-ink-2 tabular" title={`${fmt.dateTime(r.wo.plannedStart)} → ${fmt.dateTime(r.wo.plannedEnd)}`}>
@@ -260,7 +260,7 @@ export function WorkOrdersView() {
         key: "material",
         header: t("col.material"),
         align: "center",
-        hideBelow: "sm",
+        hideBelow: "2xl",
         sortValue: (r) => (r.wo.status === "completed" ? -1 : MAT_ORDER[r.wo.materialStatus]),
         cell: (r) => (r.wo.status === "completed" ? <span className="text-ink-3">—</span> : <MaterialStatusIcon value={r.wo.materialStatus} />),
       },

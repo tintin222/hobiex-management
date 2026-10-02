@@ -62,7 +62,6 @@ export const messages: Messages = {
     "roster.onShiftSubtitle": "Shift {s} · {hours} · {n} people present",
     "roster.absentTitle": "Absent this shift",
     "roster.at": "at {machine}",
-    "roster.noMachine": "No machine assigned",
     "roster.nobody": "Nobody in this group",
     "roster.noneAbsent": "Everyone scheduled is present",
 
@@ -166,7 +165,6 @@ export const messages: Messages = {
     "roster.onShiftSubtitle": "Vardiya {s} · {hours} · {n} kişi mevcut",
     "roster.absentTitle": "Bu vardiyada devamsız",
     "roster.at": "{machine} başında",
-    "roster.noMachine": "Makineye atanmamış",
     "roster.nobody": "Bu grupta kimse yok",
     "roster.noneAbsent": "Planlanan herkes işbaşında",
 

@@ -188,7 +188,7 @@ export function OrdersView() {
       {
         key: "b2b",
         header: t("col.b2bRef"),
-        hideBelow: "xl",
+        hideBelow: "2xl",
         cell: (r) => (r.so.b2bRef ? <span className="tabular text-xs whitespace-nowrap text-ink-2">{r.so.b2bRef}</span> : <span className="text-ink-3">—</span>),
       },
       {
@@ -216,7 +216,7 @@ export function OrdersView() {
           </span>
         ),
       },
-      { key: "lines", header: t("col.lines"), align: "right", hideBelow: "xl", sortValue: (r) => r.so.lines.length, cell: (r) => r.so.lines.length },
+      { key: "lines", header: t("col.lines"), align: "right", hideBelow: "2xl", sortValue: (r) => r.so.lines.length, cell: (r) => r.so.lines.length },
       {
         key: "value",
         header: t("col.value"),

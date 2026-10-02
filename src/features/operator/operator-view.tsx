@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef } from "react";
 import { LogOut, UserRoundCog } from "lucide-react";
 import { useLabel, useLang, useLangStore, useT } from "@/i18n";
@@ -20,7 +20,6 @@ import { WorkstationSelect } from "./workstation-select";
 
 export function OperatorView() {
   const t = useT(messages);
-  const router = useRouter();
   const params = useSearchParams();
   const lk = useLookups();
   const operatorId = useStore((s) => s.operatorId);
@@ -38,7 +37,8 @@ export function OperatorView() {
     topRef.current?.scrollIntoView({ block: "start" });
   }, [step, workstation?.id]);
 
-  const setMachine = useCallback((id: string | null) => router.replace(id ? `/operator?machine=${encodeURIComponent(id)}` : "/operator", { scroll: false }), [router]);
+  // client-only URL state (deep-linkable, e.g. /operator?machine=WRB-14); Next syncs useSearchParams with history.replaceState
+  const setMachine = useCallback((id: string | null) => window.history.replaceState(null, "", id ? `/operator?machine=${encodeURIComponent(id)}` : "/operator"), []);
 
   const switchOperator = () => {
     if (operator) toast({ title: t("toast.signedOut", { name: operator.name }), tone: "info" });

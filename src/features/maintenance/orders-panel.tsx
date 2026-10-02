@@ -93,7 +93,7 @@ export function OrdersPanel({
         sortValue: (mo) => mo.machineId,
       },
       { key: "title", header: t("col.title"), cell: (mo) => <span className="block max-w-72 min-w-40 truncate text-ink">{tx(mo.title, mo.titleTr)}</span>, hideBelow: "md" },
-      { key: "type", header: t("col.type"), cell: (mo) => <TypeLabel type={mo.type} />, sortValue: (mo) => MAINT_TYPES.indexOf(mo.type), hideBelow: "lg" },
+      { key: "type", header: t("col.type"), cell: (mo) => <TypeLabel type={mo.type} />, sortValue: (mo) => MAINT_TYPES.indexOf(mo.type), hideBelow: "2xl" },
       { key: "priority", header: t("col.priority"), cell: (mo) => <PriorityBadge value={mo.priority} compact />, sortValue: (mo) => PRIORITY_RANK[mo.priority], hideBelow: "xl" },
       {
         key: "scheduled",
@@ -111,7 +111,7 @@ export function OrdersPanel({
         hideBelow: "sm",
       },
       { key: "tech", header: t("col.technician"), cell: (mo) => <PersonChip id={mo.technicianId} size={20} className="max-w-40" />, hideBelow: "lg" },
-      { key: "est", header: t("col.est"), cell: (mo) => fmt.num(mo.estHours, 1), sortValue: (mo) => mo.estHours, align: "right", hideBelow: "md" },
+      { key: "est", header: t("col.est"), cell: (mo) => fmt.num(mo.estHours, 1), sortValue: (mo) => mo.estHours, align: "right", hideBelow: "2xl" },
       { key: "status", header: t("col.status"), cell: (mo) => <StatusBadge kind="maintStatus" value={effStatus(mo, clock.today)} />, sortValue: (mo) => MAINT_STATUSES.indexOf(effStatus(mo, clock.today)) },
     ],
     [t, tx, fmt, lk, clock.today],
